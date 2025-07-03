@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,16 +5,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogOut, Send, FileText, Calendar, DollarSign } from 'lucide-react';
+import { LogOut, Send, FileText, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderFormProps {
-  userInfo: { username: string; password: string };
+  userInfo: { username: string; password: string; userType: string };
   onSubmit: (data: any) => void;
   onLogout: () => void;
+  onNavigateToApproved: () => void;
 }
 
-const OrderForm = ({ userInfo, onSubmit, onLogout }: OrderFormProps) => {
+const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: OrderFormProps) => {
   const [formData, setFormData] = useState({
     produto: '',
     quantidade: '',
@@ -69,12 +69,18 @@ const OrderForm = ({ userInfo, onSubmit, onLogout }: OrderFormProps) => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Cadastro de Pedido</h1>
-            <p className="text-gray-600">Usuário: {userInfo.username}</p>
+            <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário)</p>
           </div>
-          <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
-            <LogOut className="w-4 h-4" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onNavigateToApproved} className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Ver Aprovados
+            </Button>
+            <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
+              <LogOut className="w-4 h-4" />
+              Sair
+            </Button>
+          </div>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
@@ -89,6 +95,7 @@ const OrderForm = ({ userInfo, onSubmit, onLogout }: OrderFormProps) => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="produto">Produto/Serviço *</Label>

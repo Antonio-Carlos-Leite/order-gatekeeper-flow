@@ -4,26 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Lock, Building2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, Lock, Building2, Users, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
-  onLogin: (username: string, password: string) => void;
+  onLogin: (username: string, password: string, userType: string) => void;
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password) {
+    if (!username || !password || !userType) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha usuário e senha.",
+        description: "Por favor, preencha todos os campos.",
         variant: "destructive",
       });
       return;
@@ -36,9 +38,9 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
       setIsLoading(false);
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${username}!`,
+        description: `Bem-vindo, ${username}! (${userType === 'funcionario' ? 'Funcionário' : 'Diretor'})`,
       });
-      onLogin(username, password);
+      onLogin(username, password, userType);
     }, 1000);
   };
 
@@ -62,6 +64,29 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="userType">Tipo de Usuário</Label>
+                <Select onValueChange={setUserType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de usuário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="funcionario">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Funcionário
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="diretor">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4" />
+                        Diretor
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="username">Usuário</Label>
                 <div className="relative">

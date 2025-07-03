@@ -3,26 +3,49 @@ import { useState } from 'react';
 import LoginForm from '@/components/LoginForm';
 import OrderForm from '@/components/OrderForm';
 import DirectorApproval from '@/components/DirectorApproval';
+import ApprovedOrders from '@/components/ApprovedOrders';
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval'>('login');
-  const [userInfo, setUserInfo] = useState({ username: '', password: '' });
-  const [orderData, setOrderData] = useState(null);
+  const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval' | 'approved'>('login');
+  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '' });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
 
-  const handleLogin = (username: string, password: string) => {
-    setUserInfo({ username, password });
-    setCurrentPage('order');
+  const handleLogin = (username: string, password: string, userType: string) => {
+    setUserInfo({ username, password, userType });
+    if (userType === 'funcionario') {
+      setCurrentPage('order');
+    } else if (userType === 'diretor') {
+      setCurrentPage('approval');
+    }
   };
 
   const handleOrderSubmit = (data: any) => {
-    setOrderData(data);
-    setCurrentPage('approval');
+    const newOrder = { ...data, id: Date.now() };
+    setOrders(prev => [...prev, newOrder]);
+    // Funcionário vai para tela de aprovados após enviar pedido
+    setCurrentPage('approved');
+  };
+
+  const handleOrderApproval = (orderId: number, status: 'approved' | 'rejected', comments?: string) => {
+    const orderToUpdate = orders.find(order => order.id === orderId);
+    if (orderToUpdate && status === 'approved') {
+      setApprovedOrders(prev => [...prev, { ...orderToUpdate, status, comments, approvedAt: new Date().toLocaleString('pt-BR') }]);
+    }
+    setOrders(prev => prev.filter(order => order.id !== orderId));
   };
 
   const handleLogout = () => {
     setCurrentPage('login');
-    setUserInfo({ username: '', password: '' });
-    setOrderData(null);
+    setUserInfo({ username: '', password: '', userType: '' });
+  };
+
+  const handleNavigateToApproved = () => {
+    setCurrentPage('approved');
+  };
+
+  const handleBackToOrders = () => {
+    setCurrentPage('order');
   };
 
   return (
@@ -35,14 +58,23 @@ const Index = () => {
           userInfo={userInfo} 
           onSubmit={handleOrderSubmit}
           onLogout={handleLogout}
+          onNavigateToApproved={handleNavigateToApproved}
         />
       )}
       {currentPage === 'approval' && (
         <DirectorApproval 
-          orderData={orderData}
+          orders={orders}
           userInfo={userInfo}
-          onBack={() => setCurrentPage('order')}
+          onApprove={handleOrderApproval}
           onLogout={handleLogout}
+        />
+      )}
+      {currentPage === 'approved' && (
+        <ApprovedOrders
+          approvedOrders={approvedOrders}
+          userInfo={userInfo}
+          onLogout={handleLogout}
+          onBackToOrders={handleBackToOrders}
         />
       )}
     </div>
