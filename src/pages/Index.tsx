@@ -1,12 +1,50 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import LoginForm from '@/components/LoginForm';
+import OrderForm from '@/components/OrderForm';
+import DirectorApproval from '@/components/DirectorApproval';
 
 const Index = () => {
+  const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval'>('login');
+  const [userInfo, setUserInfo] = useState({ username: '', password: '' });
+  const [orderData, setOrderData] = useState(null);
+
+  const handleLogin = (username: string, password: string) => {
+    setUserInfo({ username, password });
+    setCurrentPage('order');
+  };
+
+  const handleOrderSubmit = (data: any) => {
+    setOrderData(data);
+    setCurrentPage('approval');
+  };
+
+  const handleLogout = () => {
+    setCurrentPage('login');
+    setUserInfo({ username: '', password: '' });
+    setOrderData(null);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {currentPage === 'login' && (
+        <LoginForm onLogin={handleLogin} />
+      )}
+      {currentPage === 'order' && (
+        <OrderForm 
+          userInfo={userInfo} 
+          onSubmit={handleOrderSubmit}
+          onLogout={handleLogout}
+        />
+      )}
+      {currentPage === 'approval' && (
+        <DirectorApproval 
+          orderData={orderData}
+          userInfo={userInfo}
+          onBack={() => setCurrentPage('order')}
+          onLogout={handleLogout}
+        />
+      )}
     </div>
   );
 };
