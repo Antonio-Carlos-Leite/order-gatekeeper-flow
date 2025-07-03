@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { User, Lock, Building2, Users, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -64,27 +64,24 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="userType">Tipo de Usuário</Label>
-                <Select onValueChange={setUserType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de usuário" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="funcionario">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        Funcionário
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="diretor">
-                      <div className="flex items-center gap-2">
-                        <Crown className="w-4 h-4" />
-                        Diretor
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <RadioGroup value={userType} onValueChange={setUserType}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="funcionario" id="funcionario" />
+                    <Label htmlFor="funcionario" className="flex items-center gap-2 cursor-pointer">
+                      <Users className="w-4 h-4" />
+                      Funcionário
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="diretor" id="diretor" />
+                    <Label htmlFor="diretor" className="flex items-center gap-2 cursor-pointer">
+                      <Crown className="w-4 h-4" />
+                      Diretor
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <div className="space-y-2">
