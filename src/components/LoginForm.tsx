@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { User, Lock, Building2, Users, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import MaintenanceSection from './MaintenanceSection';
 
 interface LoginFormProps {
   onLogin: (username: string, password: string, userType: string) => void;
+  allOrders: any[];
 }
 
-const LoginForm = ({ onLogin }: LoginFormProps) => {
+const LoginForm = ({ onLogin, allOrders }: LoginFormProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
@@ -126,6 +128,9 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Área de Manutenção */}
+        <MaintenanceSection allOrders={allOrders} />
       </div>
     </div>
   );
