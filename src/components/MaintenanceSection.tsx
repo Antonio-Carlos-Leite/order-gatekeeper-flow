@@ -1,12 +1,12 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText, User, Lock, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface MaintenanceSectionProps {
@@ -15,7 +15,62 @@ interface MaintenanceSectionProps {
 
 const MaintenanceSection = ({ allOrders }: MaintenanceSectionProps) => {
   const [showMaintenance, setShowMaintenance] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Credenciais de acesso à manutenção (em produção, isso deveria vir de um backend seguro)
+  const MAINTENANCE_CREDENTIALS = {
+    email: 'admin@sistema.com',
+    password: 'admin123'
+  };
+
+  const handleMaintenanceLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha email e senha.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Simular verificação de credenciais
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      if (email === MAINTENANCE_CREDENTIALS.email && password === MAINTENANCE_CREDENTIALS.password) {
+        setIsAuthenticated(true);
+        toast({
+          title: "Acesso autorizado",
+          description: "Bem-vindo à área de manutenção!",
+        });
+      } else {
+        toast({
+          title: "Acesso negado",
+          description: "Email ou senha incorretos.",
+          variant: "destructive",
+        });
+      }
+    }, 1000);
+  };
+
+  const handleLogoutMaintenance = () => {
+    setIsAuthenticated(false);
+    setEmail('');
+    setPassword('');
+    setShowMaintenance(false);
+    toast({
+      title: "Logout realizado",
+      description: "Você saiu da área de manutenção.",
+    });
+  };
 
   const handlePrintReport = () => {
     const printWindow = window.open('', '_blank');
@@ -180,99 +235,169 @@ const MaintenanceSection = ({ allOrders }: MaintenanceSectionProps) => {
       </Button>
 
       {showMaintenance && (
-        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              Área de Manutenção
-            </CardTitle>
-            <CardDescription>
-              Relatório completo de todos os pedidos do sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Resumo */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{allOrders.length}</div>
-                <div className="text-sm text-gray-600">Total de Pedidos</div>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-                <div className="text-sm text-gray-600">Aprovados</div>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
-                <div className="text-sm text-gray-600">Rejeitados</div>
-              </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
-                <div className="text-sm text-gray-600">Pendentes</div>
-              </div>
-            </div>
+        <>
+          {!isAuthenticated ? (
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Acesso Restrito - Área de Manutenção
+                </CardTitle>
+                <CardDescription>
+                  Digite suas credenciais para acessar a área de manutenção
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleMaintenanceLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance-email">Email</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="maintenance-email"
+                        type="email"
+                        placeholder="Digite seu email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance-password">Senha</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="maintenance-password"
+                        type="password"
+                        placeholder="Digite sua senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
 
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-800">
-                R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </div>
-              <div className="text-sm text-gray-600">Valor Total Aprovado</div>
-            </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-red-600 hover:bg-red-700 transition-colors"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Verificando..." : "Acessar Manutenção"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5" />
+                      Área de Manutenção
+                    </CardTitle>
+                    <CardDescription>
+                      Relatório completo de todos os pedidos do sistema
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleLogoutMaintenance}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    Sair
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Resumo */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{allOrders.length}</div>
+                    <div className="text-sm text-gray-600">Total de Pedidos</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
+                    <div className="text-sm text-gray-600">Aprovados</div>
+                  </div>
+                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
+                    <div className="text-sm text-gray-600">Rejeitados</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
+                    <div className="text-sm text-gray-600">Pendentes</div>
+                  </div>
+                </div>
 
-            <Separator />
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-800">
+                    R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-sm text-gray-600">Valor Total Aprovado</div>
+                </div>
 
-            {/* Ações */}
-            <div className="flex gap-4 justify-center">
-              <Button onClick={handlePrintReport} className="flex items-center gap-2">
-                <Printer className="w-4 h-4" />
-                Imprimir Relatório
-              </Button>
-              <Button onClick={handleDownloadReport} variant="outline" className="flex items-center gap-2">
-                <Download className="w-4 h-4" />
-                Download JSON
-              </Button>
-            </div>
+                <Separator />
 
-            <Separator />
+                {/* Ações */}
+                <div className="flex gap-4 justify-center">
+                  <Button onClick={handlePrintReport} className="flex items-center gap-2">
+                    <Printer className="w-4 h-4" />
+                    Imprimir Relatório
+                  </Button>
+                  <Button onClick={handleDownloadReport} variant="outline" className="flex items-center gap-2">
+                    <Download className="w-4 h-4" />
+                    Download JSON
+                  </Button>
+                </div>
 
-            {/* Tabela de Pedidos */}
-            {allOrders.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Produto</TableHead>
-                      <TableHead>Quantidade</TableHead>
-                      <TableHead>Valor</TableHead>
-                      <TableHead>Fornecedor</TableHead>
-                      <TableHead>Data Envio</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>{order.id}</TableCell>
-                        <TableCell>{order.produto}</TableCell>
-                        <TableCell>{order.quantidade}</TableCell>
-                        <TableCell>R$ {parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-                        <TableCell>{order.fornecedor}</TableCell>
-                        <TableCell>{order.dataEnvio}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Nenhum pedido encontrado</h3>
-                <p>Não há pedidos no sistema ainda</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                <Separator />
+
+                {/* Tabela de Pedidos */}
+                {allOrders.length > 0 ? (
+                  <div className="max-h-96 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Produto</TableHead>
+                          <TableHead>Quantidade</TableHead>
+                          <TableHead>Valor</TableHead>
+                          <TableHead>Fornecedor</TableHead>
+                          <TableHead>Data Envio</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {allOrders.map((order) => (
+                          <TableRow key={order.id}>
+                            <TableCell>{order.id}</TableCell>
+                            <TableCell>{order.produto}</TableCell>
+                            <TableCell>{order.quantidade}</TableCell>
+                            <TableCell>R$ {parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell>{order.fornecedor}</TableCell>
+                            <TableCell>{order.dataEnvio}</TableCell>
+                            <TableCell>{getStatusBadge(order.status)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Nenhum pedido encontrado</h3>
+                    <p>Não há pedidos no sistema ainda</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );
