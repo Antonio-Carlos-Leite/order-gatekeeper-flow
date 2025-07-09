@@ -4,16 +4,85 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, LogOut, CheckCircle, Calendar, DollarSign, FileText, User } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, Calendar, DollarSign, FileText, User, Printer, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
   userInfo: { username: string; password: string; userType: string };
   onLogout: () => void;
   onBackToOrders: () => void;
+  allOrders: any[];
 }
 
-const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders }: ApprovedOrdersProps) => {
+const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, allOrders }: ApprovedOrdersProps) => {
+  const { toast } = useToast();
+
+  const handlePrintOrder = (order: any) => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Pedido ${order.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .order-info { margin-bottom: 20px; }
+            .detail { margin: 10px 0; }
+            .label { font-weight: bold; }
+            .approved { color: #16a34a; font-weight: bold; }
+            @media print { button { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Pedido de Compra</h1>
+            <p>Pedido #${order.id}</p>
+          </div>
+          <div class="order-info">
+            <div class="detail"><span class="label">Produto:</span> ${order.produto}</div>
+            <div class="detail"><span class="label">Quantidade:</span> ${order.quantidade}</div>
+            <div class="detail"><span class="label">Valor Total:</span> R$ ${parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div class="detail"><span class="label">Fornecedor:</span> ${order.fornecedor}</div>
+            <div class="detail"><span class="label">Solicitado em:</span> ${order.dataEnvio}</div>
+            <div class="detail"><span class="label">Aprovado em:</span> ${order.approvedAt}</div>
+            <div class="detail"><span class="label">Status:</span> <span class="approved">Aprovado</span></div>
+            ${order.comments ? `<div class="detail"><span class="label">Comentários:</span> ${order.comments}</div>` : ''}
+          </div>
+          <button onclick="window.print()">Imprimir</button>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
+  const handleBackupDownload = () => {
+    const backupData = {
+      approvedOrders,
+      allOrders,
+      generatedAt: new Date().toLocaleString('pt-BR'),
+      user: userInfo.username
+    };
+    
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-pedidos-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Backup gerado",
+      description: "O arquivo de backup foi baixado com sucesso!",
+    });
+  };
+
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-6xl mx-auto">
@@ -29,10 +98,16 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders }: 
               <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - {approvedOrders.length} pedidos aprovados</p>
             </div>
           </div>
-          <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
-            <LogOut className="w-4 h-4" />
-            Sair
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleBackupDownload} className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Backup
+            </Button>
+            <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
+              <LogOut className="w-4 h-4" />
+              Sair
+            </Button>
+          </div>
         </div>
 
         {approvedOrders.length === 0 ? (
@@ -110,6 +185,15 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders }: 
                       <p className="text-xs text-gray-700 bg-gray-50 p-2 rounded mt-1">{order.comments}</p>
                     </div>
                   )}
+
+                  <Button 
+                    onClick={() => handlePrintOrder(order)}
+                    className="w-full flex items-center gap-2 mt-4"
+                    variant="outline"
+                  >
+                    <Printer className="w-4 h-4" />
+                    Imprimir Pedido
+                  </Button>
                 </CardContent>
               </Card>
             ))}

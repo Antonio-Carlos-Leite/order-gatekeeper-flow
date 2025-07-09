@@ -10,6 +10,7 @@ const Index = () => {
   const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '' });
   const [orders, setOrders] = useState<any[]>([]);
   const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
+  const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
 
   const handleLogin = (username: string, password: string, userType: string) => {
     setUserInfo({ username, password, userType });
@@ -23,14 +24,28 @@ const Index = () => {
   const handleOrderSubmit = (data: any) => {
     const newOrder = { ...data, id: Date.now() };
     setOrders(prev => [...prev, newOrder]);
+    setAllOrdersHistory(prev => [...prev, { ...newOrder, status: 'pending' }]);
     // Funcionário vai para tela de aprovados após enviar pedido
     setCurrentPage('approved');
   };
 
   const handleOrderApproval = (orderId: number, status: 'approved' | 'rejected', comments?: string) => {
     const orderToUpdate = orders.find(order => order.id === orderId);
-    if (orderToUpdate && status === 'approved') {
-      setApprovedOrders(prev => [...prev, { ...orderToUpdate, status, comments, approvedAt: new Date().toLocaleString('pt-BR') }]);
+    if (orderToUpdate) {
+      const updatedOrder = { ...orderToUpdate, status, comments, approvedAt: new Date().toLocaleString('pt-BR') };
+      
+      if (status === 'approved') {
+        setApprovedOrders(prev => [...prev, updatedOrder]);
+      }
+      
+      // Atualiza o histórico completo
+      setAllOrdersHistory(prev => 
+        prev.map(order => 
+          order.id === orderId 
+            ? { ...order, status, comments, approvedAt: new Date().toLocaleString('pt-BR') }
+            : order
+        )
+      );
     }
     setOrders(prev => prev.filter(order => order.id !== orderId));
   };
@@ -75,6 +90,7 @@ const Index = () => {
           userInfo={userInfo}
           onLogout={handleLogout}
           onBackToOrders={handleBackToOrders}
+          allOrders={allOrdersHistory}
         />
       )}
     </div>
