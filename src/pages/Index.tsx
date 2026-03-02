@@ -5,15 +5,27 @@ import OrderForm from '@/components/OrderForm';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 
+export interface RegisteredUser {
+  code: string;
+  email: string;
+  password: string;
+  userType: 'funcionario' | 'diretor';
+  name: string;
+}
+
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval' | 'approved'>('login');
-  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '' });
+  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', code: '' });
   const [orders, setOrders] = useState<any[]>([]);
   const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
   const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([
+    { code: '0001', email: 'admin@sistema.com', password: 'admin123', userType: 'diretor', name: 'Administrador' },
+    { code: '0002', email: 'func@sistema.com', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão' },
+  ]);
 
-  const handleLogin = (username: string, password: string, userType: string) => {
-    setUserInfo({ username, password, userType });
+  const handleLogin = (username: string, password: string, userType: string, code: string) => {
+    setUserInfo({ username, password, userType, code });
     if (userType === 'funcionario') {
       setCurrentPage('order');
     } else if (userType === 'diretor') {
@@ -25,7 +37,6 @@ const Index = () => {
     const newOrder = { ...data, id: Date.now() };
     setOrders(prev => [...prev, newOrder]);
     setAllOrdersHistory(prev => [...prev, { ...newOrder, status: 'pending' }]);
-    // Funcionário vai para tela de aprovados após enviar pedido
     setCurrentPage('approved');
   };
 
@@ -38,7 +49,6 @@ const Index = () => {
         setApprovedOrders(prev => [...prev, updatedOrder]);
       }
       
-      // Atualiza o histórico completo
       setAllOrdersHistory(prev => 
         prev.map(order => 
           order.id === orderId 
@@ -52,7 +62,7 @@ const Index = () => {
 
   const handleLogout = () => {
     setCurrentPage('login');
-    setUserInfo({ username: '', password: '', userType: '' });
+    setUserInfo({ username: '', password: '', userType: '', code: '' });
   };
 
   const handleNavigateToApproved = () => {
@@ -63,10 +73,19 @@ const Index = () => {
     setCurrentPage('order');
   };
 
+  const handleRegisterUser = (user: RegisteredUser) => {
+    setRegisteredUsers(prev => [...prev, user]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {currentPage === 'login' && (
-        <LoginForm onLogin={handleLogin} allOrders={allOrdersHistory} />
+        <LoginForm 
+          onLogin={handleLogin} 
+          allOrders={allOrdersHistory} 
+          registeredUsers={registeredUsers}
+          onRegisterUser={handleRegisterUser}
+        />
       )}
       {currentPage === 'order' && (
         <OrderForm 
