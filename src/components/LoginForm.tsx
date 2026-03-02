@@ -4,27 +4,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { User, Lock, Building2, Users, Crown } from 'lucide-react';
+import { Lock, Building2, Hash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
+import type { RegisteredUser } from '@/pages/Index';
 
 interface LoginFormProps {
-  onLogin: (username: string, password: string, userType: string) => void;
+  onLogin: (username: string, password: string, userType: string, code: string) => void;
   allOrders: any[];
+  registeredUsers: RegisteredUser[];
+  onRegisterUser: (user: RegisteredUser) => void;
 }
 
-const LoginForm = ({ onLogin, allOrders }: LoginFormProps) => {
-  const [username, setUsername] = useState('');
+const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: LoginFormProps) => {
+  const [userCode, setUserCode] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const handleCodeChange = (value: string) => {
+    // Apenas números, máximo 4 dígitos
+    const cleaned = value.replace(/\D/g, '').slice(0, 4);
+    setUserCode(cleaned);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password || !userType) {
+    if (!userCode || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -33,16 +40,37 @@ const LoginForm = ({ onLogin, allOrders }: LoginFormProps) => {
       return;
     }
 
+    if (userCode.length !== 4) {
+      toast({
+        title: "Código inválido",
+        description: "O código de usuário deve ter 4 dígitos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simular verificação de login
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${username}! (${userType === 'funcionario' ? 'Funcionário' : 'Diretor'})`,
-      });
-      onLogin(username, password, userType);
+      
+      const foundUser = registeredUsers.find(
+        u => u.code === userCode && u.password === password
+      );
+
+      if (foundUser) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: `Bem-vindo, ${foundUser.name}! (${foundUser.userType === 'funcionario' ? 'Funcionário' : 'Diretor'})`,
+        });
+        onLogin(foundUser.name, password, foundUser.userType, foundUser.code);
+      } else {
+        toast({
+          title: "Acesso negado",
+          description: "Código de usuário ou senha incorretos.",
+          variant: "destructive",
+        });
+      }
     }, 1000);
   };
 
@@ -50,53 +78,35 @@ const LoginForm = ({ onLogin, allOrders }: LoginFormProps) => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <Building2 className="w-8 h-8 text-white" />
+          {/* Logo */}
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-4 shadow-lg">
+            <Building2 className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sistema de Pedidos</h1>
-          <p className="text-gray-600">Faça login para acessar o sistema</p>
+          <p className="text-gray-600">Faça login com seu código de usuário</p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Entrar</CardTitle>
             <CardDescription className="text-center">
-              Digite suas credenciais para acessar
+              Digite seu código de 4 dígitos e senha
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-3">
-                <Label htmlFor="userType">Tipo de Usuário</Label>
-                <RadioGroup value={userType} onValueChange={setUserType}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="funcionario" id="funcionario" />
-                    <Label htmlFor="funcionario" className="flex items-center gap-2 cursor-pointer">
-                      <Users className="w-4 h-4" />
-                      Funcionário
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="diretor" id="diretor" />
-                    <Label htmlFor="diretor" className="flex items-center gap-2 cursor-pointer">
-                      <Crown className="w-4 h-4" />
-                      Diretor
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="username">Usuário</Label>
+                <Label htmlFor="userCode">Código do Usuário (4 dígitos)</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="username"
+                    id="userCode"
                     type="text"
-                    placeholder="Digite seu usuário"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10"
+                    placeholder="0000"
+                    value={userCode}
+                    onChange={(e) => handleCodeChange(e.target.value)}
+                    className="pl-10 text-center text-lg tracking-widest font-mono"
+                    maxLength={4}
                     required
                   />
                 </div>
@@ -130,7 +140,11 @@ const LoginForm = ({ onLogin, allOrders }: LoginFormProps) => {
         </Card>
 
         {/* Área de Manutenção */}
-        <MaintenanceSection allOrders={allOrders} />
+        <MaintenanceSection 
+          allOrders={allOrders} 
+          registeredUsers={registeredUsers}
+          onRegisterUser={onRegisterUser}
+        />
       </div>
     </div>
   );
