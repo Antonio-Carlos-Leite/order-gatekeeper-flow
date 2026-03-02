@@ -5,28 +5,36 @@ import OrderForm from '@/components/OrderForm';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 
-export interface RegisteredUser {
+export interface AccessCode {
   code: string;
+  municipio: string;
+}
+
+export interface RegisteredUser {
   username: string;
   password: string;
   userType: 'funcionario' | 'diretor';
   name: string;
-  municipio: string;
+  codigoAcesso: string; // referência ao código de acesso (município)
 }
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval' | 'approved'>('login');
-  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', code: '' });
+  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '' });
   const [orders, setOrders] = useState<any[]>([]);
   const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
   const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
+  const [accessCodes, setAccessCodes] = useState<AccessCode[]>([
+    { code: '0001', municipio: 'Sede' },
+    { code: '2601', municipio: 'Jucás' },
+  ]);
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([
-    { code: '0001', username: 'Administrador', password: 'admin123', userType: 'diretor', name: 'Administrador', municipio: 'Sede' },
-    { code: '0002', username: 'Funcionario', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão', municipio: 'Sede' },
+    { username: 'Administrador', password: 'admin123', userType: 'diretor', name: 'Administrador', codigoAcesso: '0001' },
+    { username: 'Funcionario', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão', codigoAcesso: '0001' },
   ]);
 
-  const handleLogin = (username: string, password: string, userType: string, code: string) => {
-    setUserInfo({ username, password, userType, code });
+  const handleLogin = (username: string, password: string, userType: string, codigoAcesso: string, municipio: string) => {
+    setUserInfo({ username, password, userType, codigoAcesso, municipio });
     if (userType === 'funcionario') {
       setCurrentPage('order');
     } else if (userType === 'diretor') {
@@ -35,7 +43,7 @@ const Index = () => {
   };
 
   const handleOrderSubmit = (data: any) => {
-    const newOrder = { ...data, id: Date.now() };
+    const newOrder = { ...data, id: Date.now(), codigoAcesso: userInfo.codigoAcesso, municipio: userInfo.municipio };
     setOrders(prev => [...prev, newOrder]);
     setAllOrdersHistory(prev => [...prev, { ...newOrder, status: 'pending' }]);
     setCurrentPage('approved');
@@ -63,7 +71,7 @@ const Index = () => {
 
   const handleLogout = () => {
     setCurrentPage('login');
-    setUserInfo({ username: '', password: '', userType: '', code: '' });
+    setUserInfo({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '' });
   };
 
   const handleNavigateToApproved = () => {
@@ -78,6 +86,10 @@ const Index = () => {
     setRegisteredUsers(prev => [...prev, user]);
   };
 
+  const handleRegisterAccessCode = (ac: AccessCode) => {
+    setAccessCodes(prev => [...prev, ac]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {currentPage === 'login' && (
@@ -85,7 +97,9 @@ const Index = () => {
           onLogin={handleLogin} 
           allOrders={allOrdersHistory} 
           registeredUsers={registeredUsers}
+          accessCodes={accessCodes}
           onRegisterUser={handleRegisterUser}
+          onRegisterAccessCode={handleRegisterAccessCode}
         />
       )}
       {currentPage === 'order' && (

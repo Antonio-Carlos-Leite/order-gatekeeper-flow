@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
-  userInfo: { username: string; password: string; userType: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
   onLogout: () => void;
   onBackToOrders: () => void;
   allOrders: any[];
@@ -95,7 +95,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Pedidos Aprovados</h1>
-              <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - {approvedOrders.length} pedidos aprovados</p>
+              <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - Município: {userInfo.municipio} - {approvedOrders.length} pedidos aprovados</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

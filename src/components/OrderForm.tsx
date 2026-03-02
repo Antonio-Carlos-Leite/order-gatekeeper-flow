@@ -9,7 +9,7 @@ import { LogOut, Send, FileText, Calendar, DollarSign, CheckCircle } from 'lucid
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderFormProps {
-  userInfo: { username: string; password: string; userType: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
   onSubmit: (data: any) => void;
   onLogout: () => void;
   onNavigateToApproved: () => void;
@@ -69,7 +69,7 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Cadastro de Pedido</h1>
-            <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário)</p>
+            <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - Município: {userInfo.municipio} - Código: {userInfo.codigoAcesso}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onNavigateToApproved} className="flex items-center gap-2">
