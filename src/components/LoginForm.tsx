@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Building2, Hash } from 'lucide-react';
+import { Lock, Building2, Hash, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
 import type { RegisteredUser } from '@/pages/Index';
@@ -18,6 +18,7 @@ interface LoginFormProps {
 
 const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: LoginFormProps) => {
   const [userCode, setUserCode] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -31,7 +32,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userCode || !password) {
+    if (!userCode || !email || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -55,7 +56,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
       setIsLoading(false);
       
       const foundUser = registeredUsers.find(
-        u => u.code === userCode && u.password === password
+        u => u.code === userCode && u.email === email && u.password === password
       );
 
       if (foundUser) {
@@ -107,6 +108,22 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
                     onChange={(e) => handleCodeChange(e.target.value)}
                     className="pl-10 text-center text-lg tracking-widest font-mono"
                     maxLength={4}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Digite seu email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
                     required
                   />
                 </div>
