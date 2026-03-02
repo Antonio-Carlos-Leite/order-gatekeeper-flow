@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DirectorApprovalProps {
   orders: any[];
-  userInfo: { username: string; password: string; userType: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
   onApprove: (orderId: number, status: 'approved' | 'rejected', comments?: string) => void;
   onLogout: () => void;
 }
@@ -66,7 +66,7 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Painel do Diretor</h1>
-            <p className="text-gray-600">Usuário: {userInfo.username} (Diretor) - {orders.length} pedidos pendentes</p>
+            <p className="text-gray-600">Usuário: {userInfo.username} (Diretor) - Município: {userInfo.municipio} - {orders.length} pedidos pendentes</p>
           </div>
           <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
             <LogOut className="w-4 h-4" />

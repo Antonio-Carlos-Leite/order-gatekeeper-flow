@@ -7,17 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Lock, Building2, Hash, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
-import type { RegisteredUser } from '@/pages/Index';
+import type { RegisteredUser, AccessCode } from '@/pages/Index';
 
 interface LoginFormProps {
-  onLogin: (username: string, password: string, userType: string, code: string) => void;
+  onLogin: (username: string, password: string, userType: string, codigoAcesso: string, municipio: string) => void;
   allOrders: any[];
   registeredUsers: RegisteredUser[];
+  accessCodes: AccessCode[];
   onRegisterUser: (user: RegisteredUser) => void;
+  onRegisterAccessCode: (ac: AccessCode) => void;
 }
 
-const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: LoginFormProps) => {
-  const [userCode, setUserCode] = useState('');
+const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegisterUser, onRegisterAccessCode }: LoginFormProps) => {
+  const [accessCode, setAccessCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,13 +27,13 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
 
   const handleCodeChange = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 4);
-    setUserCode(cleaned);
+    setAccessCode(cleaned);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userCode || !username || !password) {
+    if (!accessCode || !username || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -40,10 +42,10 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
       return;
     }
 
-    if (userCode.length !== 4) {
+    if (accessCode.length !== 4) {
       toast({
         title: "Código inválido",
-        description: "O código de usuário deve ter 4 dígitos.",
+        description: "O código de acesso deve ter 4 dígitos.",
         variant: "destructive",
       });
       return;
@@ -53,21 +55,33 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
     
     setTimeout(() => {
       setIsLoading(false);
+
+      // Verificar se o código de acesso existe
+      const foundAccessCode = accessCodes.find(ac => ac.code === accessCode);
+      if (!foundAccessCode) {
+        toast({
+          title: "Código de acesso inválido",
+          description: "Este código de acesso não existe no sistema.",
+          variant: "destructive",
+        });
+        return;
+      }
       
+      // Verificar usuário vinculado a este código de acesso
       const foundUser = registeredUsers.find(
-        u => u.code === userCode && u.username === username && u.password === password
+        u => u.codigoAcesso === accessCode && u.username === username && u.password === password
       );
 
       if (foundUser) {
         toast({
           title: "Login realizado com sucesso!",
-          description: `Bem-vindo, ${foundUser.name}! Município: ${foundUser.municipio}`,
+          description: `Bem-vindo, ${foundUser.name}! Município: ${foundAccessCode.municipio}`,
         });
-        onLogin(foundUser.name, password, foundUser.userType, foundUser.code);
+        onLogin(foundUser.name, password, foundUser.userType, foundAccessCode.code, foundAccessCode.municipio);
       } else {
         toast({
           title: "Acesso negado",
-          description: "Código, usuário ou senha incorretos.",
+          description: "Código de acesso, usuário ou senha incorretos.",
           variant: "destructive",
         });
       }
@@ -82,27 +96,27 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
             <Building2 className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sistema de Pedidos</h1>
-          <p className="text-gray-600">Faça login com seu código de usuário</p>
+          <p className="text-gray-600">Faça login com seu código de acesso</p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Entrar</CardTitle>
             <CardDescription className="text-center">
-              Digite seu código, usuário e senha
+              Digite seu código de acesso, usuário e senha
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="userCode">Código do Usuário (4 dígitos)</Label>
+                <Label htmlFor="accessCode">Código de Acesso (4 dígitos)</Label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="userCode"
+                    id="accessCode"
                     type="text"
                     placeholder="0000"
-                    value={userCode}
+                    value={accessCode}
                     onChange={(e) => handleCodeChange(e.target.value)}
                     className="pl-10 text-center text-lg tracking-widest font-mono"
                     maxLength={4}
@@ -157,7 +171,9 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
         <MaintenanceSection 
           allOrders={allOrders} 
           registeredUsers={registeredUsers}
+          accessCodes={accessCodes}
           onRegisterUser={onRegisterUser}
+          onRegisterAccessCode={onRegisterAccessCode}
         />
       </div>
     </div>
