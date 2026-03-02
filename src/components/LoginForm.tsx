@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Building2, Hash, Mail } from 'lucide-react';
+import { Lock, Building2, Hash, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
 import type { RegisteredUser } from '@/pages/Index';
@@ -18,13 +18,12 @@ interface LoginFormProps {
 
 const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: LoginFormProps) => {
   const [userCode, setUserCode] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleCodeChange = (value: string) => {
-    // Apenas números, máximo 4 dígitos
     const cleaned = value.replace(/\D/g, '').slice(0, 4);
     setUserCode(cleaned);
   };
@@ -32,7 +31,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userCode || !email || !password) {
+    if (!userCode || !username || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -56,19 +55,19 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
       setIsLoading(false);
       
       const foundUser = registeredUsers.find(
-        u => u.code === userCode && u.email === email && u.password === password
+        u => u.code === userCode && u.username === username && u.password === password
       );
 
       if (foundUser) {
         toast({
           title: "Login realizado com sucesso!",
-          description: `Bem-vindo, ${foundUser.name}! (${foundUser.userType === 'funcionario' ? 'Funcionário' : 'Diretor'})`,
+          description: `Bem-vindo, ${foundUser.name}! Município: ${foundUser.municipio}`,
         });
         onLogin(foundUser.name, password, foundUser.userType, foundUser.code);
       } else {
         toast({
           title: "Acesso negado",
-          description: "Código de usuário ou senha incorretos.",
+          description: "Código, usuário ou senha incorretos.",
           variant: "destructive",
         });
       }
@@ -79,7 +78,6 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          {/* Logo */}
           <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-4 shadow-lg">
             <Building2 className="w-12 h-12 text-white" />
           </div>
@@ -91,7 +89,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Entrar</CardTitle>
             <CardDescription className="text-center">
-              Digite seu código de 4 dígitos e senha
+              Digite seu código, usuário e senha
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -114,15 +112,15 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Usuário (Nome)</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="Digite seu email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    type="text"
+                    placeholder="Digite seu nome de usuário"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="pl-10"
                     required
                   />
@@ -156,7 +154,6 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, onRegisterUser }: Logi
           </CardContent>
         </Card>
 
-        {/* Área de Manutenção */}
         <MaintenanceSection 
           allOrders={allOrders} 
           registeredUsers={registeredUsers}
