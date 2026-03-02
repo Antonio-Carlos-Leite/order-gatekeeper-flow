@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText, User, Lock, Shield, UserPlus, Users, Crown, Hash } from 'lucide-react';
+import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText, User, Lock, Shield, UserPlus, Users, Crown, Hash, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { RegisteredUser } from '@/pages/Index';
 
@@ -28,9 +28,10 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
 
   // Form de cadastro
   const [newUserName, setNewUserName] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserType, setNewUserType] = useState<'funcionario' | 'diretor'>('funcionario');
+  const [newUserMunicipio, setNewUserMunicipio] = useState('');
 
   const MAINTENANCE_CREDENTIALS = {
     email: 'admin@sistema.com',
@@ -90,7 +91,7 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
   const handleRegisterUser = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newUserName || !newUserEmail || !newUserPassword || !newUserType) {
+    if (!newUserName || !newUserUsername || !newUserPassword || !newUserType || !newUserMunicipio) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos para cadastrar.",
@@ -99,11 +100,11 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
       return;
     }
 
-    const existingEmail = registeredUsers.find(u => u.email === newUserEmail);
-    if (existingEmail) {
+    const existingUsername = registeredUsers.find(u => u.username === newUserUsername);
+    if (existingUsername) {
       toast({
-        title: "Email já cadastrado",
-        description: "Este email já está em uso por outro usuário.",
+        title: "Usuário já cadastrado",
+        description: "Este nome de usuário já está em uso.",
         variant: "destructive",
       });
       return;
@@ -113,22 +114,24 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
     const newUser: RegisteredUser = {
       code: newCode,
       name: newUserName,
-      email: newUserEmail,
+      username: newUserUsername,
       password: newUserPassword,
       userType: newUserType,
+      municipio: newUserMunicipio,
     };
 
     onRegisterUser(newUser);
     
     toast({
       title: "Usuário cadastrado!",
-      description: `Usuário "${newUserName}" criado com código ${newCode}.`,
+      description: `Usuário "${newUserName}" criado com código ${newCode} - Município: ${newUserMunicipio}.`,
     });
 
     setNewUserName('');
-    setNewUserEmail('');
+    setNewUserUsername('');
     setNewUserPassword('');
     setNewUserType('funcionario');
+    setNewUserMunicipio('');
   };
 
   const handlePrintReport = () => {
@@ -334,18 +337,22 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
                         <form onSubmit={handleRegisterUser} className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label>Nome</Label>
+                              <Label>Nome Completo</Label>
                               <Input placeholder="Nome do usuário" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} required />
                             </div>
                             <div className="space-y-2">
-                              <Label>Email</Label>
-                              <Input type="email" placeholder="email@exemplo.com" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} required />
+                              <Label>Usuário (Nome de Login)</Label>
+                              <Input placeholder="Nome de usuário" value={newUserUsername} onChange={(e) => setNewUserUsername(e.target.value)} required />
                             </div>
                             <div className="space-y-2">
                               <Label>Senha</Label>
                               <Input type="password" placeholder="Senha do usuário" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} required />
                             </div>
                             <div className="space-y-2">
+                              <Label>Município</Label>
+                              <Input placeholder="Ex: Jucás" value={newUserMunicipio} onChange={(e) => setNewUserMunicipio(e.target.value)} required />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
                               <Label>Tipo de Usuário</Label>
                               <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor')} className="flex gap-4 pt-2">
                                 <div className="flex items-center space-x-2">
@@ -383,10 +390,11 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
                       <CardContent>
                         <Table>
                           <TableHeader>
-                            <TableRow>
+                             <TableRow>
                               <TableHead>Código</TableHead>
                               <TableHead>Nome</TableHead>
-                              <TableHead>Email</TableHead>
+                              <TableHead>Usuário</TableHead>
+                              <TableHead>Município</TableHead>
                               <TableHead>Tipo</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -395,7 +403,12 @@ const MaintenanceSection = ({ allOrders, registeredUsers, onRegisterUser }: Main
                               <TableRow key={user.code}>
                                 <TableCell className="font-mono font-bold">{user.code}</TableCell>
                                 <TableCell>{user.name}</TableCell>
-                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{user.username}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                                    <MapPin className="w-3 h-3" />{user.municipio}
+                                  </Badge>
+                                </TableCell>
                                 <TableCell>
                                   <Badge className={user.userType === 'diretor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
                                     {user.userType === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}

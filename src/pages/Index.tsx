@@ -7,10 +7,11 @@ import ApprovedOrders from '@/components/ApprovedOrders';
 
 export interface RegisteredUser {
   code: string;
-  email: string;
+  username: string;
   password: string;
   userType: 'funcionario' | 'diretor';
   name: string;
+  municipio: string;
 }
 
 const Index = () => {
@@ -20,8 +21,8 @@ const Index = () => {
   const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
   const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([
-    { code: '0001', email: 'admin@sistema.com', password: 'admin123', userType: 'diretor', name: 'Administrador' },
-    { code: '0002', email: 'func@sistema.com', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão' },
+    { code: '0001', username: 'Administrador', password: 'admin123', userType: 'diretor', name: 'Administrador', municipio: 'Sede' },
+    { code: '0002', username: 'Funcionario', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão', municipio: 'Sede' },
   ]);
 
   const handleLogin = (username: string, password: string, userType: string, code: string) => {
