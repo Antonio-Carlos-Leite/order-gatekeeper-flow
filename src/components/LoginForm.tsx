@@ -97,6 +97,10 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
           <h1 className="text-3xl font-bold text-foreground mb-1">Sistema de Iluminação Pública</h1>
           <p className="text-lg font-medium text-muted-foreground">Prefeitura Municipal</p>
           <p className="text-sm text-muted-foreground mt-1">Faça login com seu código de acesso</p>
+          <div className="mt-4 text-sm text-muted-foreground space-y-2">
+            <p>Bem-vindo ao Sistema de Iluminação Pública Municipais.</p>
+            <p>Para sua segurança esta conexão é monitorada e todas as operações poderão ser auditadas.</p>
+          </div>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
