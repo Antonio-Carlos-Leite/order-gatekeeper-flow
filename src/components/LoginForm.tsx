@@ -93,7 +93,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src={logoIppark} alt="IPPARK Logo" className="w-32 h-32 rounded-2xl mb-4 shadow-lg object-cover" />
+          <img src={logoIppark} alt="IPPARK Logo" className="w-48 h-auto mb-4 shadow-lg rounded-2xl mx-auto" />
           <h1 className="text-3xl font-bold text-foreground mb-1">Sistema de Iluminação Pública</h1>
           <p className="text-lg font-medium text-muted-foreground">Prefeitura Municipal</p>
           <p className="text-sm text-muted-foreground mt-1">Faça login com seu código de acesso</p>
