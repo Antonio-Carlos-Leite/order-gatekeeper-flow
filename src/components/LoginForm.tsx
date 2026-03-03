@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Building2, Hash, User } from 'lucide-react';
+import { Lock, Hash, User } from 'lucide-react';
+import logoIppark from '@/assets/logo-ippark.jpeg';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
 import type { RegisteredUser, AccessCode } from '@/pages/Index';
@@ -92,11 +93,10 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-4 shadow-lg">
-            <Building2 className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sistema de Pedidos</h1>
-          <p className="text-gray-600">Faça login com seu código de acesso</p>
+          <img src={logoIppark} alt="IPPARK Logo" className="w-32 h-32 rounded-2xl mb-4 shadow-lg object-cover" />
+          <h1 className="text-3xl font-bold text-foreground mb-1">Sistema de Iluminação Pública</h1>
+          <p className="text-lg font-medium text-muted-foreground">Prefeitura Municipal</p>
+          <p className="text-sm text-muted-foreground mt-1">Faça login com seu código de acesso</p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
