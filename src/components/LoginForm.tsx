@@ -90,28 +90,27 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-2">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <img src={logoIppark} alt="IPPARK Logo" className="w-48 h-auto mb-4 shadow-lg rounded-2xl mx-auto" />
-          <h1 className="text-3xl font-bold text-foreground mb-1">Sistema de Iluminação Pública</h1>
-          <p className="text-lg font-medium text-muted-foreground">Prefeitura Municipal</p>
-          <p className="text-sm text-muted-foreground mt-1">Faça login com seu código de acesso</p>
-          <div className="mt-4 text-sm text-muted-foreground space-y-2">
-            <p>Bem-vindo ao Sistema de Iluminação Pública Municipais.</p>
-            <p>Para sua segurança esta conexão é monitorada e todas as operações poderão ser auditadas.</p>
-          </div>
+        <div className="text-center mb-4">
+          <img src={logoIppark} alt="IPPARK Logo" className="w-36 h-auto mb-2 shadow-lg rounded-xl mx-auto" />
+          <h1 className="text-2xl font-bold text-foreground mb-0.5">Sistema de Iluminação Pública</h1>
+          <p className="text-base font-medium text-muted-foreground">Prefeitura Municipal</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-tight">
+            Bem-vindo ao Sistema de Iluminação Pública Municipais.<br />
+            Para sua segurança esta conexão é monitorada e todas as operações poderão ser auditadas.
+          </p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Entrar</CardTitle>
-            <CardDescription className="text-center">
+          <CardHeader className="space-y-1 pb-2 pt-4">
+            <CardTitle className="text-xl text-center">Entrar</CardTitle>
+            <CardDescription className="text-center text-xs">
               Digite seu código de acesso, usuário e senha
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="pb-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="accessCode">Código de Acesso</Label>
                 <div className="relative">
