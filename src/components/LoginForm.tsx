@@ -109,7 +109,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="accessCode">Código de Acesso (4 dígitos)</Label>
+                <Label htmlFor="accessCode">Código de Acesso</Label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
