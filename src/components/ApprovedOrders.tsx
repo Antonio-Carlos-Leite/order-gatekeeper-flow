@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, LogOut, CheckCircle, Calendar, DollarSign, FileText, User, Printer, Download } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
-  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string; name?: string };
   onLogout: () => void;
   onBackToOrders: () => void;
   allOrders: any[];
@@ -42,14 +42,16 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             <p>Pedido #${order.id}</p>
           </div>
           <div class="order-info">
-            <div class="detail"><span class="label">Produto:</span> ${order.produto}</div>
-            <div class="detail"><span class="label">Quantidade:</span> ${order.quantidade}</div>
-            <div class="detail"><span class="label">Valor Total:</span> R$ ${parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            <div class="detail"><span class="label">Fornecedor:</span> ${order.fornecedor}</div>
+            <div class="detail"><span class="label">Solicitante:</span> ${order.solicitante || '—'}</div>
+            <div class="detail"><span class="label">Produto/Serviço:</span> ${order.produto || order.tipoServico || '—'}</div>
+            <div class="detail"><span class="label">Código do Poste:</span> ${order.codigoDoPoste ?? order.quantidade ?? '—'}</div>
+            <div class="detail"><span class="label">Tipo de Serviço:</span> ${order.tipoServico || order.fornecedor || '—'}</div>
             <div class="detail"><span class="label">Solicitado em:</span> ${order.dataEnvio}</div>
             <div class="detail"><span class="label">Aprovado em:</span> ${order.approvedAt}</div>
             <div class="detail"><span class="label">Status:</span> <span class="approved">Aprovado</span></div>
-            ${order.comments ? `<div class="detail"><span class="label">Comentários:</span> ${order.comments}</div>` : ''}
+            ${order.tipoLampada ? `<div class="detail"><span class="label">Tipo de Lâmpada:</span> ${order.tipoLampada}</div>` : ''}
+            ${order.observações ? `<div class="detail"><span class="label">Observações:</span> ${order.observações}</div>` : ''}
+            ${order.comments ? `<div class="detail"><span class="label">Comentários do Diretor:</span> ${order.comments}</div>` : ''}
           </div>
           <button onclick="window.print()">Imprimir</button>
         </body>
@@ -95,7 +97,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Pedidos Aprovados</h1>
-              <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - Município: {userInfo.municipio} - {approvedOrders.length} pedidos aprovados</p>
+              <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Funcionário) - Município: {userInfo.municipio} - {approvedOrders.length} pedidos aprovados</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -129,10 +131,10 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                     <div>
                       <CardTitle className="flex items-center gap-2 text-lg">
                         <FileText className="w-5 h-5" />
-                        {order.produto}
+                        {order.produto || order.tipoServico || 'Pedido'}
                       </CardTitle>
                       <CardDescription>
-                        Pedido #{order.id}
+                        Pedido #{order.id} · Solicitante: {order.solicitante || '—'}
                       </CardDescription>
                     </div>
                     <Badge className="bg-green-100 text-green-800">
@@ -142,23 +144,24 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-medium text-gray-500">Solicitante</Label>
+                    <p className="text-sm font-medium">{order.solicitante || '—'}</p>
+                  </div>
+                  {order.enviadoPor && (
                     <div>
-                      <Label className="text-xs font-medium text-gray-500">Quantidade</Label>
-                      <p className="text-sm">{order.quantidade}</p>
+                      <Label className="text-xs font-medium text-gray-500">Enviado por</Label>
+                      <p className="text-xs text-gray-600">{order.enviadoPor}</p>
                     </div>
-                    <div>
-                      <Label className="text-xs font-medium text-gray-500">Valor Total</Label>
-                      <p className="text-sm font-semibold text-green-600 flex items-center gap-1">
-                        <DollarSign className="w-3 h-3" />
-                        R$ {parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                    </div>
+                  )}
+                  <div>
+                    <Label className="text-xs font-medium text-gray-500">Código do Poste</Label>
+                    <p className="text-sm">{order.codigoDoPoste ?? order.quantidade ?? '—'}</p>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-medium text-gray-500">Fornecedor</Label>
-                    <p className="text-sm">{order.fornecedor}</p>
+                    <Label className="text-xs font-medium text-gray-500">Tipo de Serviço</Label>
+                    <p className="text-sm">{order.tipoServico || order.fornecedor || '—'}</p>
                   </div>
 
                   <Separator />
@@ -179,6 +182,12 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                     </p>
                   </div>
 
+                  {(order.tipoLampada || order.observações) && (
+                    <div>
+                      <Label className="text-xs font-medium text-gray-500">Tipo de Lâmpada / Observações</Label>
+                      <p className="text-xs text-gray-700">{[order.tipoLampada, order.observações].filter(Boolean).join(' · ')}</p>
+                    </div>
+                  )}
                   {order.comments && (
                     <div>
                       <Label className="text-xs font-medium text-gray-500">Comentários do Diretor</Label>

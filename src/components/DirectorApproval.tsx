@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DirectorApprovalProps {
   orders: any[];
-  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string; name?: string };
   onApprove: (orderId: number, status: 'approved' | 'rejected', comments?: string) => void;
   onLogout: () => void;
 }
@@ -66,7 +66,7 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Painel do Diretor</h1>
-            <p className="text-gray-600">Usuário: {userInfo.username} (Diretor) - Município: {userInfo.municipio} - {orders.length} pedidos pendentes</p>
+            <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Diretor) - Município: {userInfo.municipio} - {orders.length} pedidos pendentes</p>
           </div>
           <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
             <LogOut className="w-4 h-4" />
@@ -103,13 +103,13 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
                         onClick={() => setSelectedOrder(order)}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold">{order.produto}</h3>
-                          <Badge className={getUrgencyColor(order.urgencia)}>
-                            {order.urgencia.charAt(0).toUpperCase() + order.urgencia.slice(1)}
+                          <h3 className="font-semibold">{order.produto || order.tipoServico || 'Pedido'}</h3>
+                          <Badge className={getUrgencyColor(order.urgencia || 'normal')}>
+                            {(order.urgencia || 'normal').charAt(0).toUpperCase() + (order.urgencia || 'normal').slice(1)}
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600">Solicitante: {order.solicitante}</p>
-                        <p className="text-sm text-gray-600">Valor: R$ {parseFloat(order.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        
                         <p className="text-xs text-gray-500">{order.dataEnvio}</p>
                       </div>
                     ))}
@@ -136,22 +136,16 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Produto/Serviço</Label>
-                      <p className="font-semibold">{selectedOrder.produto}</p>
+                      <p className="font-semibold">{selectedOrder.produto || selectedOrder.tipoServico || '—'}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-500">Quantidade</Label>
-                      <p>{selectedOrder.quantidade}</p>
+                      <Label className="text-sm font-medium text-gray-500">Código do Poste</Label>
+                      <p>{selectedOrder.codigoDoPoste ?? selectedOrder.quantidade ?? '—'}</p>
                     </div>
+                    
                     <div>
-                      <Label className="text-sm font-medium text-gray-500">Valor Total</Label>
-                      <p className="font-semibold text-green-600 flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
-                        R$ {parseFloat(selectedOrder.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Fornecedor</Label>
-                      <p>{selectedOrder.fornecedor}</p>
+                      <Label className="text-sm font-medium text-gray-500">Tipo de Serviço</Label>
+                      <p>{selectedOrder.tipoServico || selectedOrder.fornecedor || '—'}</p>
                     </div>
                   </div>
 
@@ -161,7 +155,26 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
                     <Label className="text-sm font-medium text-gray-500">Solicitante</Label>
                     <p>{selectedOrder.solicitante}</p>
                   </div>
-
+                  {selectedOrder.enviadoPor && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Enviado por (usuário)</Label>
+                      <p className="text-muted-foreground">{selectedOrder.enviadoPor}</p>
+                    </div>
+                  )}
+                  {(selectedOrder.cpf || selectedOrder.Rua || selectedOrder.Bairro) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {selectedOrder.cpf && <div><Label className="text-sm font-medium text-gray-500">CPF</Label><p>{selectedOrder.cpf}</p></div>}
+                      {selectedOrder.Rua && <div><Label className="text-sm font-medium text-gray-500">Rua</Label><p>{selectedOrder.Rua}</p></div>}
+                      {selectedOrder.Bairro && <div><Label className="text-sm font-medium text-gray-500">Bairro</Label><p>{selectedOrder.Bairro}</p></div>}
+                      {selectedOrder.localização && <div><Label className="text-sm font-medium text-gray-500">Localização</Label><p>{selectedOrder.localização}</p></div>}
+                    </div>
+                  )}
+                  {(selectedOrder.DatadaSolicitação || selectedOrder.tipoLampada) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {selectedOrder.DatadaSolicitação && <div><Label className="text-sm font-medium text-gray-500">Data da solicitação</Label><p>{selectedOrder.DatadaSolicitação}</p></div>}
+                      {selectedOrder.tipoLampada && <div><Label className="text-sm font-medium text-gray-500">Tipo de Lâmpada</Label><p>{selectedOrder.tipoLampada}</p></div>}
+                    </div>
+                  )}
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Data de Envio</Label>
                     <p className="flex items-center gap-2">
@@ -170,10 +183,10 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApp
                     </p>
                   </div>
 
-                  {selectedOrder.justificativa && (
+                  {(selectedOrder.justificativa || selectedOrder.observações) && (
                     <div>
-                      <Label className="text-sm font-medium text-gray-500">Justificativa</Label>
-                      <p className="text-gray-700">{selectedOrder.justificativa}</p>
+                      <Label className="text-sm font-medium text-gray-500">Justificativa / Observações</Label>
+                      <p className="text-gray-700">{selectedOrder.justificativa || selectedOrder.observações}</p>
                     </div>
                   )}
 

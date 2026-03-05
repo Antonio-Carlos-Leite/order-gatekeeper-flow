@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText, User, Lock, Shield, UserPlus, Users, Crown, Hash, MapPin } from 'lucide-react';
+import { Settings, Download, Printer, CheckCircle, XCircle, Clock, FileText, User, Lock, Shield, UserPlus, Users, Crown, Hash, MapPin, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { RegisteredUser, AccessCode } from '@/pages/Index';
 
@@ -187,14 +187,27 @@ const MaintenanceSection = ({ allOrders, registeredUsers, accessCodes, onRegiste
   const totalValue = allOrders.filter(order => order.status === 'approved').reduce((sum, order) => sum + parseFloat(order.valor || 0), 0);
 
   return (
-    <div className="mt-8">
-      <Button variant="outline" onClick={() => setShowMaintenance(!showMaintenance)} className="flex items-center gap-2 mb-4">
+    <div className="mt-4">
+      <Button variant="outline" onClick={() => setShowMaintenance(!showMaintenance)} className="flex items-center gap-2 mb-2">
         <Settings className="w-4 h-4" />
         {showMaintenance ? 'Ocultar Manutenção' : 'Área de Manutenção'}
       </Button>
 
       {showMaintenance && (
-        <>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/50 overflow-y-auto"
+          onClick={(e) => e.target === e.currentTarget && setShowMaintenance(false)}
+        >
+          <div
+            className="relative bg-background rounded-lg shadow-xl max-w-sm w-full my-4 max-h-[calc(100vh-2rem)] overflow-y-auto "
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex justify-end p-2 bg-background border-b rounded-t-lg">
+              <Button type="button" variant="ghost" size="icon" onClick={() => setShowMaintenance(false)} aria-label="Fechar">
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="p-4 pt-0">
           {!isAuthenticated ? (
             <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
@@ -486,7 +499,9 @@ const MaintenanceSection = ({ allOrders, registeredUsers, accessCodes, onRegiste
               </CardContent>
             </Card>
           )}
-        </>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

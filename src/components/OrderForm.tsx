@@ -5,11 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogOut, Send, FileText, Calendar, DollarSign, CheckCircle } from 'lucide-react';
+import { LogOut, Send, FileText, Calendar, DollarSign, CheckCircle, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderFormProps {
-  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string };
+  userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string; name?: string };
   onSubmit: (data: any) => void;
   onLogout: () => void;
   onNavigateToApproved: () => void;
@@ -18,13 +18,16 @@ interface OrderFormProps {
 const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: OrderFormProps) => {
   const [formData, setFormData] = useState({
     produto: '',
-    quantidade: '',
-    valor: '',
-    fornecedor: '',
-    categoria: '',
-    prazoEntrega: '',
-    justificativa: '',
-    urgencia: 'normal'
+    codigoDoPoste: '',
+    solicitante: '',
+    cpf: '',
+    Rua: '',
+    Bairro: '',
+    localização: '',
+    DatadaSolicitação: '',
+    tipoServico: '',
+    tipoLampada: '',
+    observações: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -36,7 +39,7 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.produto || !formData.quantidade || !formData.valor || !formData.fornecedor) {
+    if (!formData.produto || !formData.codigoDoPoste || !formData.solicitante || !formData.cpf || !formData.Rua || !formData.Bairro || !formData.localização || !formData.DatadaSolicitação || !formData.tipoServico || !formData.tipoLampada) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -55,7 +58,8 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
       });
       onSubmit({
         ...formData,
-        solicitante: userInfo.username,
+        solicitante: formData.solicitante,
+        enviadoPor: userInfo.username,
         dataEnvio: new Date().toLocaleString('pt-BR'),
         status: 'Aguardando Aprovação'
       });
@@ -68,8 +72,8 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Cadastro de Pedido</h1>
-            <p className="text-gray-600">Usuário: {userInfo.username} (Funcionário) - Município: {userInfo.municipio} - Código: {userInfo.codigoAcesso}</p>
+            <h1 className="text-3xl font-bold text-gray-900">Solicitação de Serviços-IPPARK {userInfo.municipio}</h1>
+            <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Funcionário) - Município: {userInfo.municipio} - Código: {userInfo.codigoAcesso}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onNavigateToApproved} className="flex items-center gap-2">
@@ -87,7 +91,7 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
-              Novo Pedido de Compra
+              ORDEM DE SERVIÇOS - IPPARK 
             </CardTitle>
             <CardDescription>
               Preencha os dados do pedido para enviar para aprovação
@@ -98,10 +102,10 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="produto">Produto/Serviço *</Label>
+                  <Label htmlFor="produto">Descrição/Solicitação</Label>
                   <Input
                     id="produto"
-                    placeholder="Nome do produto ou serviço"
+                    placeholder="Descreva a solicitação ou serviço"
                     value={formData.produto}
                     onChange={(e) => handleInputChange('produto', e.target.value)}
                     required
@@ -109,28 +113,27 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="quantidade">Quantidade *</Label>
+                  <Label htmlFor="codigodoposte">Código do Poste</Label>
                   <Input
-                    id="quantidade"
+                    id="codigodoposte"
                     type="number"
-                    placeholder="Quantidade"
-                    value={formData.quantidade}
-                    onChange={(e) => handleInputChange('quantidade', e.target.value)}
+                    placeholder="Código do poste"
+                    value={formData.codigoDoPoste}
+                    onChange={(e) => handleInputChange('codigoDoPoste', e.target.value)}
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="valor">Valor Total (R$) *</Label>
+                  <Label htmlFor="solicitante">Nome</Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      id="valor"
-                      type="number"
-                      step="0.01"
-                      placeholder="0,00"
-                      value={formData.valor}
-                      onChange={(e) => handleInputChange('valor', e.target.value)}
+                      id="solicitante"
+                      type="text"
+                      placeholder="Nome do solicitante"
+                      value={formData.solicitante}
+                      onChange={(e) => handleInputChange('solicitante', e.target.value)}
                       className="pl-10"
                       required
                     />
@@ -138,69 +141,113 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="fornecedor">Fornecedor *</Label>
+                  <Label htmlFor="cpf">CPF</Label>
                   <Input
-                    id="fornecedor"
-                    placeholder="Nome do fornecedor"
-                    value={formData.fornecedor}
-                    onChange={(e) => handleInputChange('fornecedor', e.target.value)}
+                    id="cpf"
+                    placeholder="CPF do solicitante"
+                    value={formData.cpf}
+                    onChange={(e) => handleInputChange('cpf', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="Rua">Rua</Label>
+                  <Input
+                    id="Rua"
+                    placeholder="Rua do solicitante"
+                    value={formData.Rua}
+                    onChange={(e) => handleInputChange('Rua', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="Bairro">Bairro</Label>
+                  <Input
+                    id="Bairro"
+                    placeholder="Bairro do solicitante"
+                    value={formData.Bairro}
+                    onChange={(e) => handleInputChange('Bairro', e.target.value)}
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="categoria">Categoria</Label>
-                  <Select onValueChange={(value) => handleInputChange('categoria', value)}>
+                  <Label htmlFor="localizacao">Localização</Label>
+                  <Select value={formData.localização} onValueChange={(value) => handleInputChange('localização', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a categoria" />
+                      <SelectValue placeholder="Selecione a localização" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="material-escritorio">Material de Escritório</SelectItem>
-                      <SelectItem value="equipamentos">Equipamentos</SelectItem>
-                      <SelectItem value="servicos">Serviços</SelectItem>
-                      <SelectItem value="manutencao">Manutenção</SelectItem>
-                      <SelectItem value="outros">Outros</SelectItem>
+                      <SelectItem value="Zona Rural">Zona Rural</SelectItem>
+                      <SelectItem value="Zona Urbana">Zona Urbana</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="prazoEntrega">Prazo de Entrega</Label>
+                  <Label htmlFor="dataSolicitacao">Data da solicitação</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      id="prazoEntrega"
+                      id="dataSolicitacao"
                       type="date"
-                      value={formData.prazoEntrega}
-                      onChange={(e) => handleInputChange('prazoEntrega', e.target.value)}
+                      value={formData.DatadaSolicitação}
+                      onChange={(e) => handleInputChange('DatadaSolicitação', e.target.value)}
                       className="pl-10"
                     />
                   </div>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                  <Label htmlFor="tipoServico">Tipo de Serviço</Label>
+                  <Select value={formData.tipoServico} onValueChange={(value) => handleInputChange('tipoServico', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de serviço" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Instalação de Poste">Instalação de Poste</SelectItem>
+                      <SelectItem value="Manutenção de Poste">Manutenção de Poste</SelectItem>
+                      <SelectItem value="Remoção de Poste">Remoção de Poste</SelectItem>
+                      <SelectItem value="Instalação de Lâmpada">Instalação de Lâmpada</SelectItem>
+                      <SelectItem value="Instalação de Lâmpada">Troca de Lâmpada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              <div className="space-y-2">
+                  <Label htmlFor="tipoLampada">Tipo de Lâmpada</Label>
+                  <Select value={formData.tipoLampada} onValueChange={(value) => handleInputChange('tipoLampada', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de lâmpada" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LED 50W">LED 50W</SelectItem>
+                      <SelectItem value="LED 80W">LED 80W</SelectItem>
+                      <SelectItem value="LED 100W">LED 100W</SelectItem>
+                      <SelectItem value="LED 150W">LED 150W</SelectItem>
+                      <SelectItem value="LED 200W">LED 200W</SelectItem>
+                      <SelectItem value="LED 250W">LED 250W</SelectItem>
+                      <SelectItem value="LED 400W">LED 400W</SelectItem>
+                      <SelectItem value="METÁLICA 70W">METÁLICA 70W</SelectItem>
+                      <SelectItem value="METÁLICA 100W">METÁLICA 100W</SelectItem>
+                      <SelectItem value="METÁLICA 150W">METÁLICA 150W</SelectItem>
+                      <SelectItem value="METÁLICA 200W">METÁLICA 200W</SelectItem>
+                      <SelectItem value="METÁLICA 250W">METÁLICA 250W</SelectItem>
+                      <SelectItem value="METÁLICA 400W">METÁLICA 400W</SelectItem>
+                      <SelectItem value="VAPOR DE SÓDIO 100W">VAPOR DE SÓDIO 100W</SelectItem>
+                      <SelectItem value="VAPOR DE SÓDIO 250W">VAPOR DE SÓDIO 250W</SelectItem>
+                      <SelectItem value="VAPOR DE SÓDIO 400W">VAPOR DE SÓDIO 400W</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               
               <div className="space-y-2">
-                <Label htmlFor="urgencia">Nível de Urgência</Label>
-                <Select onValueChange={(value) => handleInputChange('urgencia', value)} defaultValue="normal">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="baixa">Baixa</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="urgente">Urgente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="justificativa">Justificativa</Label>
+                <Label htmlFor="justificativa">OBSERVAÇÕES</Label>
                 <Textarea
-                  id="justificativa"
-                  placeholder="Descreva a justificativa para este pedido..."
-                  value={formData.justificativa}
-                  onChange={(e) => handleInputChange('justificativa', e.target.value)}
+                  id="observações"
+                  placeholder="Descreva as observações para este pedido..."
+                  value={formData.observações}
+                  onChange={(e) => handleInputChange('observações', e.target.value)}
                   rows={4}
                 />
               </div>

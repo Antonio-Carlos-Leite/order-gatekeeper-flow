@@ -20,10 +20,13 @@ export interface RegisteredUser {
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval' | 'approved'>('login');
-  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '' });
-  const [orders, setOrders] = useState<any[]>([]);
+  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '', name: '' });
   const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
   const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
+
+  const pendingOrders = allOrdersHistory.filter(
+    (o: any) => o.status === 'pending' && (!userInfo.codigoAcesso || o.codigoAcesso === userInfo.codigoAcesso)
+  );
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([
     { code: '0001', municipio: 'Sede' },
     { code: '2601', municipio: 'Jucás' },
@@ -33,8 +36,8 @@ const Index = () => {
     { username: 'Funcionario', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão', codigoAcesso: '0001' },
   ]);
 
-  const handleLogin = (username: string, password: string, userType: string, codigoAcesso: string, municipio: string) => {
-    setUserInfo({ username, password, userType, codigoAcesso, municipio });
+  const handleLogin = (username: string, password: string, userType: string, codigoAcesso: string, municipio: string, displayName?: string) => {
+    setUserInfo({ username, password, userType, codigoAcesso, municipio, name: displayName || username });
     if (userType === 'funcionario') {
       setCurrentPage('order');
     } else if (userType === 'diretor') {
@@ -43,35 +46,39 @@ const Index = () => {
   };
 
   const handleOrderSubmit = (data: any) => {
-    const newOrder = { ...data, id: Date.now(), codigoAcesso: userInfo.codigoAcesso, municipio: userInfo.municipio };
-    setOrders(prev => [...prev, newOrder]);
-    setAllOrdersHistory(prev => [...prev, { ...newOrder, status: 'pending' }]);
-    setCurrentPage('approved');
+    const newOrder = {
+      ...data,
+      id: Date.now(),
+      codigoAcesso: userInfo.codigoAcesso,
+      municipio: userInfo.municipio,
+      status: 'pending',
+      solicitante: data.solicitante ?? '',
+    };
+    setAllOrdersHistory(prev => [...prev, newOrder]);
+    setCurrentPage('order');
   };
 
   const handleOrderApproval = (orderId: number, status: 'approved' | 'rejected', comments?: string) => {
-    const orderToUpdate = orders.find(order => order.id === orderId);
-    if (orderToUpdate) {
-      const updatedOrder = { ...orderToUpdate, status, comments, approvedAt: new Date().toLocaleString('pt-BR') };
-      
+    setAllOrdersHistory(prev => {
+      const orderToUpdate = prev.find((order: any) => order.id === orderId);
+      if (!orderToUpdate) return prev;
+      const updatedOrder = {
+        ...orderToUpdate,
+        status,
+        comments,
+        approvedAt: new Date().toLocaleString('pt-BR'),
+        solicitante: orderToUpdate.solicitante ?? '',
+      };
       if (status === 'approved') {
-        setApprovedOrders(prev => [...prev, updatedOrder]);
+        setApprovedOrders(approved => [...approved, updatedOrder]);
       }
-      
-      setAllOrdersHistory(prev => 
-        prev.map(order => 
-          order.id === orderId 
-            ? { ...order, status, comments, approvedAt: new Date().toLocaleString('pt-BR') }
-            : order
-        )
-      );
-    }
-    setOrders(prev => prev.filter(order => order.id !== orderId));
+      return prev.map((order: any) => (order.id === orderId ? updatedOrder : order));
+    });
   };
 
   const handleLogout = () => {
     setCurrentPage('login');
-    setUserInfo({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '' });
+    setUserInfo({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '', name: '' });
   };
 
   const handleNavigateToApproved = () => {
@@ -112,7 +119,7 @@ const Index = () => {
       )}
       {currentPage === 'approval' && (
         <DirectorApproval 
-          orders={orders}
+          orders={pendingOrders}
           userInfo={userInfo}
           onApprove={handleOrderApproval}
           onLogout={handleLogout}

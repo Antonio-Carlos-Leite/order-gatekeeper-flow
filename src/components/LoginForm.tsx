@@ -6,12 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Hash, User } from 'lucide-react';
 import logoIppark from '@/assets/logo-ippark.jpeg';
+import backgroundImage from '@/assets/tela de fundo.png';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
 import type { RegisteredUser, AccessCode } from '@/pages/Index';
 
 interface LoginFormProps {
-  onLogin: (username: string, password: string, userType: string, codigoAcesso: string, municipio: string) => void;
+  onLogin: (username: string, password: string, userType: string, codigoAcesso: string, municipio: string, displayName?: string) => void;
   allOrders: any[];
   registeredUsers: RegisteredUser[];
   accessCodes: AccessCode[];
@@ -78,7 +79,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
           title: "Login realizado com sucesso!",
           description: `Bem-vindo, ${foundUser.name}! Município: ${foundAccessCode.municipio}`,
         });
-        onLogin(foundUser.name, password, foundUser.userType, foundAccessCode.code, foundAccessCode.municipio);
+        onLogin(foundUser.username, password, foundUser.userType, foundAccessCode.code, foundAccessCode.municipio, foundUser.name);
       } else {
         toast({
           title: "Acesso negado",
@@ -90,7 +91,10 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2">
+    <div
+      className="min-h-screen flex items-center justify-center p-2 bg-slate-50 bg-no-repeat bg-bottom bg-contain"
+      style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: '60%' }}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-4">
           <img src={logoIppark} alt="IPPARK Logo" className="w-36 h-auto mb-2 shadow-lg rounded-xl mx-auto" />
@@ -102,18 +106,18 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
           </p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-white/20 backdrop-blur-none">
           <CardHeader className="space-y-1 pb-2 pt-4">
             <CardTitle className="text-xl text-center">Entrar</CardTitle>
-            <CardDescription className="text-center text-xs">
+            <CardDescription className="text-center text-xs ">
               Digite seu código de acesso, usuário e senha
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-4">
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3 ">
               <div className="space-y-2">
-                <Label htmlFor="accessCode">Código de Acesso</Label>
-                <div className="relative">
+                <Label htmlFor="accessCode ">Código de Acesso</Label>
+                <div className="relative ">
                   <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="accessCode"
@@ -121,7 +125,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
                     placeholder="0000"
                     value={accessCode}
                     onChange={(e) => handleCodeChange(e.target.value)}
-                    className="pl-10 text-center text-lg tracking-widest font-mono"
+                    className="pl-10 text-center text-lg tracking-widest font-mono bg-white/80 backdrop-blur-none"
                     maxLength={4}
                     required
                   />
@@ -129,7 +133,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username">Usuário (Nome)</Label>
+                <Label htmlFor="username">Usuário</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -138,7 +142,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
                     placeholder="Digite seu nome de usuário"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-white/80 backdrop-blur-none"
                     required
                   />
                 </div>
@@ -154,7 +158,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
                     placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-white/80 backdrop-blur-none"
                     required
                   />
                 </div>
