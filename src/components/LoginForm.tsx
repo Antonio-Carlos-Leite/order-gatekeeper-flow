@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Hash, User } from 'lucide-react';
 import logoIppark from '@/assets/logo-ippark.jpeg';
-import backgroundImage from '@/assets/tela de fundo.png';
+import backgroundImage from '@/src/assets/tela de fundo.png';
 import { useToast } from '@/hooks/use-toast';
 import MaintenanceSection from './MaintenanceSection';
 import type { RegisteredUser, AccessCode } from '@/pages/Index';
