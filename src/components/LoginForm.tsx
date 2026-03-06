@@ -92,7 +92,8 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-2 bg-slate-50"
+      className="min-h-screen flex items-center justify-center p-2 bg-slate-50 bg-no-repeat bg-bottom"
+      style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: '60%', backgroundAttachment: 'fixed' }}
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-4">
