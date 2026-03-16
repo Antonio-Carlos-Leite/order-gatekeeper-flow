@@ -32,8 +32,16 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             body { font-family: Arial, sans-serif; margin: 30px 40px; position: relative; color: #222; }
             .watermark {
               position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-              opacity: 0.06; width: 500px; pointer-events: none; z-index: 0;
+              opacity: 0.15; width: 500px; pointer-events: none; z-index: 0;
             }
+            .status-stamp {
+              position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
+              opacity: 0.18; pointer-events: none; z-index: 0;
+              font-size: 120px; font-weight: 900; letter-spacing: 10px; text-transform: uppercase;
+              border: 12px solid; border-radius: 20px; padding: 10px 40px;
+            }
+            .status-stamp.approved { color: #16a34a; border-color: #16a34a; }
+            .status-stamp.rejected { color: #dc2626; border-color: #dc2626; }
             .content { position: relative; z-index: 1; }
             .page-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 8px; }
             .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -62,6 +70,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
         </head>
         <body>
           <img src="${watermarkUrl}" class="watermark" />
+          <div class="status-stamp approved">APROVADO</div>
           <div class="content">
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
