@@ -116,7 +116,7 @@ const OrderForm = ({ userInfo, onSubmit, onLogout, onNavigateToApproved }: Order
                   <Label htmlFor="codigodoposte">Código do Poste</Label>
                   <Input
                     id="codigodoposte"
-                    type="number"
+                    type="text"
                     placeholder="Código do poste"
                     value={formData.codigoDoPoste}
                     onChange={(e) => handleInputChange('codigoDoPoste', e.target.value)}
