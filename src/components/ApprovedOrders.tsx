@@ -67,12 +67,12 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
         </head>
         <body>
           <img src="${watermarkUrl}" class="watermark" />
-          <img src="${stampUrl}" class="stamp-img" />
           <div class="content">
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
             <div class="header-row">
               <div class="company-info">
+                <img src="${stampUrl}" class="stamp-img" />
                 <div class="company-name">IPPARK</div>
                 <div>Iluminação Pública</div>
                 <div>Município: ${order.municipio || '—'}</div>
