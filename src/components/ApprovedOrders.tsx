@@ -66,7 +66,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
         </head>
         <body>
           <img src="${watermarkUrl}" class="watermark" />
-          <div class="status-stamp approved">APROVADO</div>
+          <img src="${stampUrl}" class="stamp-img" />
           <div class="content">
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
