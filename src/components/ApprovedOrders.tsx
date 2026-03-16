@@ -36,13 +36,14 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               opacity: 0.15; width: 500px; pointer-events: none; z-index: 0;
             }
             .stamp-img {
-              display: block; width: 130px; height: 130px; margin-bottom: 8px;
+              display: block; width: 150px; height: 150px;
               opacity: 0.85; pointer-events: none;
             }
             .content { position: relative; z-index: 1; }
             .page-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 8px; }
-            .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+            .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
             .company-info { font-size: 12px; line-height: 1.6; }
+            .stamp-center { display: flex; align-items: center; justify-content: center; flex: 1; }
             .company-name { font-size: 14px; font-weight: bold; }
             .os-box { border: 2px solid #333; padding: 8px 16px; text-align: center; font-size: 13px; }
             .os-box .os-number { font-weight: bold; font-size: 15px; }
@@ -72,10 +73,12 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             
             <div class="header-row">
               <div class="company-info">
-                <img src="${stampUrl}" class="stamp-img" />
                 <div class="company-name">IPPARK</div>
                 <div>Iluminação Pública</div>
                 <div>Município: ${order.municipio || '—'}</div>
+              </div>
+              <div class="stamp-center">
+                <img src="${stampUrl}" class="stamp-img" />
               </div>
               <div class="os-box">
                 <div class="os-number">O.S. Nº: ${String(order.id).slice(-6).padStart(6, '0')}</div>
