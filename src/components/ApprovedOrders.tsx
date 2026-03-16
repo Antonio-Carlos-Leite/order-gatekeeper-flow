@@ -36,8 +36,8 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               opacity: 0.15; width: 500px; pointer-events: none; z-index: 0;
             }
             .stamp-img {
-              position: absolute; top: 10px; right: 10px; width: 150px; height: 150px;
-              opacity: 0.85; pointer-events: none; z-index: 2;
+              display: block; width: 130px; height: 130px; margin-bottom: 8px;
+              opacity: 0.85; pointer-events: none;
             }
             .content { position: relative; z-index: 1; }
             .page-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 8px; }
@@ -67,12 +67,12 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
         </head>
         <body>
           <img src="${watermarkUrl}" class="watermark" />
-          <img src="${stampUrl}" class="stamp-img" />
           <div class="content">
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
             <div class="header-row">
               <div class="company-info">
+                <img src="${stampUrl}" class="stamp-img" />
                 <div class="company-name">IPPARK</div>
                 <div>Iluminação Pública</div>
                 <div>Município: ${order.municipio || '—'}</div>
