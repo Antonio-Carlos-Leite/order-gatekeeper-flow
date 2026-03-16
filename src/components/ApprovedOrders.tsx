@@ -22,6 +22,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       const watermarkUrl = window.location.origin + '/images/ippark-watermark.png';
+      const stampUrl = window.location.origin + '/images/carimbo-aprovado.png';
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -34,14 +35,10 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
               opacity: 0.15; width: 500px; pointer-events: none; z-index: 0;
             }
-            .status-stamp {
-              position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
-              opacity: 0.18; pointer-events: none; z-index: 0;
-              font-size: 120px; font-weight: 900; letter-spacing: 10px; text-transform: uppercase;
-              border: 12px solid; border-radius: 20px; padding: 10px 40px;
+            .stamp-img {
+              position: absolute; top: 10px; right: 10px; width: 150px; height: 150px;
+              opacity: 0.85; pointer-events: none; z-index: 2;
             }
-            .status-stamp.approved { color: #16a34a; border-color: #16a34a; }
-            .status-stamp.rejected { color: #dc2626; border-color: #dc2626; }
             .content { position: relative; z-index: 1; }
             .page-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 8px; }
             .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -70,7 +67,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
         </head>
         <body>
           <img src="${watermarkUrl}" class="watermark" />
-          <div class="status-stamp approved">APROVADO</div>
+          <img src="${stampUrl}" class="stamp-img" />
           <div class="content">
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
