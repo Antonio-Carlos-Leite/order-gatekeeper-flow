@@ -214,9 +214,9 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                         Pedido #{order.id} · Solicitante: {order.solicitante || '—'}
                       </CardDescription>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Aprovado
+                    <Badge className={order.status === 'rejected' ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                      {order.status === 'rejected' ? <XCircle className="w-3 h-3 mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
+                      {order.status === 'rejected' ? 'Reprovado' : 'Aprovado'}
                     </Badge>
                   </div>
                 </CardHeader>
