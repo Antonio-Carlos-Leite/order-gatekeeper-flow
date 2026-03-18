@@ -22,7 +22,8 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       const watermarkUrl = window.location.origin + '/images/ippark-watermark.png';
-      const stampUrl = window.location.origin + '/images/carimbo-aprovado.png';
+      const isRejected = order.status === 'rejected';
+      const stampUrl = window.location.origin + (isRejected ? '/images/carimbo-reprovado.png' : '/images/carimbo-aprovado.png');
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
