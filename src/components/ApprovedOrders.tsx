@@ -113,17 +113,15 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               </div>
             </div>
 
-            ${order.observações ? `
             <div class="section">
-              <div class="section-title">Observações</div>
-              <div class="section-body">${order.observações}</div>
-            </div>` : ''}
+              <div class="section-title">Observações do Atendimento</div>
+              <div class="section-body" style="min-height: 60px;">${order.observações || '&nbsp;'}</div>
+            </div>
 
-            ${order.comments ? `
             <div class="section">
-              <div class="section-title">Comentários do Diretor</div>
-              <div class="section-body">${order.comments}</div>
-            </div>` : ''}
+              <div class="section-title">Observações Técnico/Gestor</div>
+              <div class="section-body" style="min-height: 60px;">${order.comments || '&nbsp;'}</div>
+            </div>
 
             <div class="signatures">
               <div class="sig-line"><hr/><span>Assinatura Solicitante</span></div>
