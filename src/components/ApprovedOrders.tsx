@@ -140,28 +140,19 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
     }
   };
 
-  const handleBackupDownload = () => {
-    const backupData = {
-      approvedOrders,
-      allOrders,
-      generatedAt: new Date().toLocaleString('pt-BR'),
-      user: userInfo.username
-    };
-    
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup-pedidos-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Backup gerado",
-      description: "O arquivo de backup foi baixado com sucesso!",
-    });
+  const handleBackupJSON = () => {
+    exportJSON(allOrders, approvedOrders, userInfo.username);
+    toast({ title: "Backup JSON gerado", description: "O arquivo JSON foi baixado com sucesso!" });
+  };
+
+  const handleBackupPDF = () => {
+    exportPDF(allOrders);
+    toast({ title: "Relatório PDF gerado", description: "O relatório PDF foi baixado com sucesso!" });
+  };
+
+  const handleBackupExcel = () => {
+    exportExcel(allOrders);
+    toast({ title: "Planilha Excel gerada", description: "A planilha Excel foi baixada com sucesso!" });
   };
 
   return (
@@ -180,10 +171,30 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleBackupDownload} className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Backup
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Backup
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="flex flex-col gap-1">
+                  <Button variant="ghost" className="justify-start gap-2 text-sm" onClick={handleBackupJSON}>
+                    <FileJson className="w-4 h-4" />
+                    Baixar JSON
+                  </Button>
+                  <Button variant="ghost" className="justify-start gap-2 text-sm" onClick={handleBackupPDF}>
+                    <FileDown className="w-4 h-4" />
+                    Gerar PDF
+                  </Button>
+                  <Button variant="ghost" className="justify-start gap-2 text-sm" onClick={handleBackupExcel}>
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Exportar Excel
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
               <LogOut className="w-4 h-4" />
               Sair
