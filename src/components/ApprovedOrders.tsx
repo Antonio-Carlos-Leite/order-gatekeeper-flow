@@ -1,11 +1,14 @@
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, LogOut, CheckCircle, XCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, LogOut, CheckCircle, XCircle, Calendar, FileText, Printer, Download, FileJson, FileSpreadsheet, FileDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { exportJSON, exportPDF, exportExcel } from '@/utils/backupExports';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
