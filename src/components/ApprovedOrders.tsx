@@ -72,13 +72,13 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
             
             <div class="header-row">
-              <div class="company-info">
+              <div class="stamp-center" style="flex: 0 0 auto;">
+                <img src="${stampUrl}" class="stamp-img" />
+              </div>
+              <div class="company-info" style="flex: 1; text-align: center;">
                 <div class="company-name">IPPARK</div>
                 <div>Iluminação Pública</div>
                 <div>Município: ${order.municipio || '—'}</div>
-              </div>
-              <div class="stamp-center">
-                <img src="${stampUrl}" class="stamp-img" />
               </div>
               <div class="os-box">
                 <div class="os-number">O.S. Nº: ${String(order.id).slice(-6).padStart(6, '0')}</div>
