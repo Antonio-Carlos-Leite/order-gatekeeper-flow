@@ -46,11 +46,11 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             .company-info { font-size: 12px; line-height: 1.6; }
             .stamp-center { display: flex; align-items: center; justify-content: center; flex: 1; }
             .company-name { font-size: 14px; font-weight: bold; }
-            .os-box { border: 2px solid #333; padding: 8px 16px; text-align: center; font-size: 13px; }
+            .os-box { border: 2px solid #333; padding: 8px 16px; text-align: center; font-size: 13px; background: transparent; }
             .os-box .os-number { font-weight: bold; font-size: 15px; }
-            .section { border: 1.5px solid #333; margin-bottom: 12px; }
-            .section-title { background: #f0f0f0; border-bottom: 1.5px solid #333; padding: 6px 12px; font-weight: bold; font-size: 13px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
-            .section-body { padding: 10px 14px; font-size: 12px; line-height: 1.8; }
+            .section { border: 1.5px solid #333; margin-bottom: 12px; background: transparent; }
+            .section-title { background: rgba(240,240,240,0.4); border-bottom: 1.5px solid #333; padding: 6px 12px; font-weight: bold; font-size: 13px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+            .section-body { padding: 10px 14px; font-size: 12px; line-height: 1.8; background: transparent; }
             .section-body .row { display: flex; gap: 20px; flex-wrap: wrap; }
             .section-body .field { flex: 1; min-width: 45%; }
             .field-label { font-weight: bold; }
