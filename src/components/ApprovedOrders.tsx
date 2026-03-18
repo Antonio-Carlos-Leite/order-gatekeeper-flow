@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, LogOut, CheckCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, XCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ApprovedOrdersProps {

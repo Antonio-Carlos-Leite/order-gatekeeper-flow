@@ -69,9 +69,7 @@ const Index = () => {
         approvedAt: new Date().toLocaleString('pt-BR'),
         solicitante: orderToUpdate.solicitante ?? '',
       };
-      if (status === 'approved') {
-        setApprovedOrders(approved => [...approved, updatedOrder]);
-      }
+      setApprovedOrders(approved => [...approved, updatedOrder]);
       return prev.map((order: any) => (order.id === orderId ? updatedOrder : order));
     });
   };
