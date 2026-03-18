@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, LogOut, CheckCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, XCircle, Calendar, FileText, Printer, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ApprovedOrdersProps {
@@ -22,7 +22,8 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       const watermarkUrl = window.location.origin + '/images/ippark-watermark.png';
-      const stampUrl = window.location.origin + '/images/carimbo-aprovado.png';
+      const isRejected = order.status === 'rejected';
+      const stampUrl = window.location.origin + (isRejected ? '/images/carimbo-reprovado.png' : '/images/carimbo-aprovado.png');
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -96,7 +97,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                 </div>
                 <div class="row">
                   <div class="field"><span class="field-label">Município:</span> ${order.municipio || '—'}</div>
-                  <div class="field"><span class="field-label">Status:</span> <span class="status-badge">✓ Aprovado</span></div>
+                  <div class="field"><span class="field-label">Status:</span> <span class="status-badge" style="${isRejected ? 'background:#fecaca;color:#991b1b;' : ''}">${isRejected ? '✗ Reprovado' : '✓ Aprovado'}</span></div>
                 </div>
               </div>
             </div>
@@ -113,17 +114,15 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               </div>
             </div>
 
-            ${order.observações ? `
             <div class="section">
-              <div class="section-title">Observações</div>
-              <div class="section-body">${order.observações}</div>
-            </div>` : ''}
+              <div class="section-title">Observações do Atendimento</div>
+              <div class="section-body" style="min-height: 60px;">${order.observações || '&nbsp;'}</div>
+            </div>
 
-            ${order.comments ? `
             <div class="section">
-              <div class="section-title">Comentários do Diretor</div>
-              <div class="section-body">${order.comments}</div>
-            </div>` : ''}
+              <div class="section-title">Observações Técnico/Gestor</div>
+              <div class="section-body" style="min-height: 60px;">${order.comments || '&nbsp;'}</div>
+            </div>
 
             <div class="signatures">
               <div class="sig-line"><hr/><span>Assinatura Solicitante</span></div>
@@ -174,8 +173,8 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
               Voltar aos Pedidos
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Pedidos Aprovados</h1>
-              <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Funcionário) - Município: {userInfo.municipio} - {approvedOrders.length} pedidos aprovados</p>
+              <h1 className="text-3xl font-bold text-gray-900">Pedidos Processados</h1>
+              <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Funcionário) - Município: {userInfo.municipio} - {approvedOrders.length} pedidos</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -215,9 +214,9 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                         Pedido #{order.id} · Solicitante: {order.solicitante || '—'}
                       </CardDescription>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Aprovado
+                    <Badge className={order.status === 'rejected' ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                      {order.status === 'rejected' ? <XCircle className="w-3 h-3 mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
+                      {order.status === 'rejected' ? 'Reprovado' : 'Aprovado'}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -262,13 +261,13 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
 
                   {(order.tipoLampada || order.observações) && (
                     <div>
-                      <Label className="text-xs font-medium text-gray-500">Tipo de Lâmpada / Observações</Label>
+                      <Label className="text-xs font-medium text-gray-500">Tipo de Lâmpada / Observações do Atendimento</Label>
                       <p className="text-xs text-gray-700">{[order.tipoLampada, order.observações].filter(Boolean).join(' · ')}</p>
                     </div>
                   )}
                   {order.comments && (
                     <div>
-                      <Label className="text-xs font-medium text-gray-500">Comentários do Diretor</Label>
+                      <Label className="text-xs font-medium text-gray-500">Observações Técnico/Gestor</Label>
                       <p className="text-xs text-gray-700 bg-gray-50 p-2 rounded mt-1">{order.comments}</p>
                     </div>
                   )}
