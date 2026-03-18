@@ -33,7 +33,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
             body { font-family: Arial, sans-serif; margin: 30px 40px; position: relative; color: #222; }
             .watermark {
               position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-              opacity: 0.15; width: 500px; pointer-events: none; z-index: 0;
+              opacity: 0.35; width: 500px; pointer-events: none; z-index: 0;
             }
             .stamp-img {
               display: block; width: 150px; height: 150px;
