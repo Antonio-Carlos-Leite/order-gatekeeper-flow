@@ -260,13 +260,13 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
 
                   {(order.tipoLampada || order.observações) && (
                     <div>
-                      <Label className="text-xs font-medium text-gray-500">Tipo de Lâmpada / Observações</Label>
+                      <Label className="text-xs font-medium text-gray-500">Tipo de Lâmpada / Observações do Atendimento</Label>
                       <p className="text-xs text-gray-700">{[order.tipoLampada, order.observações].filter(Boolean).join(' · ')}</p>
                     </div>
                   )}
                   {order.comments && (
                     <div>
-                      <Label className="text-xs font-medium text-gray-500">Comentários do Diretor</Label>
+                      <Label className="text-xs font-medium text-gray-500">Observações Técnico/Gestor</Label>
                       <p className="text-xs text-gray-700 bg-gray-50 p-2 rounded mt-1">{order.comments}</p>
                     </div>
                   )}
