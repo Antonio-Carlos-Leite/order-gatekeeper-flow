@@ -97,7 +97,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onLogout, onBackToOrders, al
                 </div>
                 <div class="row">
                   <div class="field"><span class="field-label">Município:</span> ${order.municipio || '—'}</div>
-                  <div class="field"><span class="field-label">Status:</span> <span class="status-badge">✓ Aprovado</span></div>
+                  <div class="field"><span class="field-label">Status:</span> <span class="status-badge" style="${isRejected ? 'background:#fecaca;color:#991b1b;' : ''}">${isRejected ? '✗ Reprovado' : '✓ Aprovado'}</span></div>
                 </div>
               </div>
             </div>
