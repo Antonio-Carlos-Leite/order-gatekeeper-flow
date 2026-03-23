@@ -14,16 +14,182 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      empresas: {
+        Row: {
+          codigo_acesso: string
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          codigo_acesso: string
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          codigo_acesso?: string
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      pedidos: {
+        Row: {
+          aprovado_por: string | null
+          bairro: string | null
+          codigo_poste: string | null
+          comments: string | null
+          cpf: string | null
+          created_at: string
+          criado_por: string
+          data_aprovacao: string | null
+          data_solicitacao: string | null
+          empresa_id: string
+          id: string
+          localizacao: string | null
+          observacoes_atendimento: string | null
+          observacoes_tecnico: string | null
+          rua: string | null
+          solicitante: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          tipo: Database["public"]["Enums"]["order_type"]
+          tipo_lampada: string | null
+          tipo_servico: string | null
+          updated_at: string
+        }
+        Insert: {
+          aprovado_por?: string | null
+          bairro?: string | null
+          codigo_poste?: string | null
+          comments?: string | null
+          cpf?: string | null
+          created_at?: string
+          criado_por: string
+          data_aprovacao?: string | null
+          data_solicitacao?: string | null
+          empresa_id: string
+          id?: string
+          localizacao?: string | null
+          observacoes_atendimento?: string | null
+          observacoes_tecnico?: string | null
+          rua?: string | null
+          solicitante?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tipo?: Database["public"]["Enums"]["order_type"]
+          tipo_lampada?: string | null
+          tipo_servico?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aprovado_por?: string | null
+          bairro?: string | null
+          codigo_poste?: string | null
+          comments?: string | null
+          cpf?: string | null
+          created_at?: string
+          criado_por?: string
+          data_aprovacao?: string | null
+          data_solicitacao?: string | null
+          empresa_id?: string
+          id?: string
+          localizacao?: string | null
+          observacoes_atendimento?: string | null
+          observacoes_tecnico?: string | null
+          rua?: string | null
+          solicitante?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tipo?: Database["public"]["Enums"]["order_type"]
+          tipo_lampada?: string | null
+          tipo_servico?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          empresa_id: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          empresa_id: string
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          empresa_id?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_empresa_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "funcionario" | "diretor"
+      order_status:
+        | "rascunho"
+        | "aguardando_aprovacao"
+        | "aprovado"
+        | "rejeitado"
+      order_type: "pedido" | "ordem_servico"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +316,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["funcionario", "diretor"],
+      order_status: [
+        "rascunho",
+        "aguardando_aprovacao",
+        "aprovado",
+        "rejeitado",
+      ],
+      order_type: ["pedido", "ordem_servico"],
+    },
   },
 } as const
