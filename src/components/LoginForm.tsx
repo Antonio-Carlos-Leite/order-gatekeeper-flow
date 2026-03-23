@@ -1,41 +1,26 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Hash, User } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import logoIppark from '@/assets/logo-ippark.jpeg';
 import backgroundImage from '@/assets/tela-de-fundo.png';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import MaintenanceSection from './MaintenanceSection';
-import type { RegisteredUser, AccessCode } from '@/pages/Index';
 
-interface LoginFormProps {
-  onLogin: (username: string, password: string, userType: string, codigoAcesso: string, municipio: string, displayName?: string) => void;
-  allOrders: any[];
-  registeredUsers: RegisteredUser[];
-  accessCodes: AccessCode[];
-  onRegisterUser: (user: RegisteredUser) => void;
-  onRegisterAccessCode: (ac: AccessCode) => void;
-}
-
-const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegisterUser, onRegisterAccessCode }: LoginFormProps) => {
-  const [accessCode, setAccessCode] = useState('');
-  const [username, setUsername] = useState('');
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const handleCodeChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 4);
-    setAccessCode(cleaned);
-  };
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!accessCode || !username || !password) {
+    if (!email || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -44,50 +29,24 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
       return;
     }
 
-    if (accessCode.length !== 4) {
-      toast({
-        title: "Código inválido",
-        description: "O código de acesso deve ter 4 dígitos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     
-    setTimeout(() => {
-      setIsLoading(false);
+    const { error } = await signIn(email, password);
+    
+    setIsLoading(false);
 
-      // Verificar se o código de acesso existe
-      const foundAccessCode = accessCodes.find(ac => ac.code === accessCode);
-      if (!foundAccessCode) {
-        toast({
-          title: "Código de acesso inválido",
-          description: "Este código de acesso não existe no sistema.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Verificar usuário vinculado a este código de acesso
-      const foundUser = registeredUsers.find(
-        u => u.codigoAcesso === accessCode && u.username === username && u.password === password
-      );
-
-      if (foundUser) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo, ${foundUser.name}! Município: ${foundAccessCode.municipio}`,
-        });
-        onLogin(foundUser.username, password, foundUser.userType, foundAccessCode.code, foundAccessCode.municipio, foundUser.name);
-      } else {
-        toast({
-          title: "Acesso negado",
-          description: "Código de acesso, usuário ou senha incorretos.",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
+    if (error) {
+      toast({
+        title: "Acesso negado",
+        description: "Email ou senha incorretos.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo ao sistema!",
+      });
+    }
   };
 
   return (
@@ -109,39 +68,22 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
         <Card className="shadow-xl border-0 bg-white/20 backdrop-blur-none">
           <CardHeader className="space-y-1 pb-2 pt-4">
             <CardTitle className="text-xl text-center">Entrar</CardTitle>
-            <CardDescription className="text-center text-xs ">
-              Digite seu código de acesso, usuário e senha
+            <CardDescription className="text-center text-xs">
+              Digite seu email e senha para acessar
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-4">
-            <form onSubmit={handleSubmit} className="space-y-3 ">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="accessCode ">Código de Acesso</Label>
-                <div className="relative ">
-                  <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="accessCode"
-                    type="text"
-                    placeholder="0000"
-                    value={accessCode}
-                    onChange={(e) => handleCodeChange(e.target.value)}
-                    className="pl-10 text-center text-lg tracking-widest font-mono bg-white/80 backdrop-blur-none"
-                    maxLength={4}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username">Usuário</Label>
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="username"
-                    type="text"
-                    placeholder="Digite seu nome de usuário"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Digite seu email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 bg-white/80 backdrop-blur-none"
                     required
                   />
@@ -175,13 +117,7 @@ const LoginForm = ({ onLogin, allOrders, registeredUsers, accessCodes, onRegiste
           </CardContent>
         </Card>
 
-        <MaintenanceSection 
-          allOrders={allOrders} 
-          registeredUsers={registeredUsers}
-          accessCodes={accessCodes}
-          onRegisterUser={onRegisterUser}
-          onRegisterAccessCode={onRegisterAccessCode}
-        />
+        <MaintenanceSection />
       </div>
     </div>
   );

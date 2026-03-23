@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 interface DirectorApprovalProps {
   orders: any[];
   userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string; name?: string };
-  onApprove: (orderId: number, status: 'approved' | 'rejected', comments?: string) => void;
+  onApprove: (orderId: string | number, status: 'approved' | 'rejected', comments?: string) => void;
   onLogout: () => void;
 }
 

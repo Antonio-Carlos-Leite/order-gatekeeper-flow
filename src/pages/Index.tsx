@@ -1,10 +1,12 @@
-
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { usePedidos } from '@/hooks/usePedidos';
 import LoginForm from '@/components/LoginForm';
 import OrderForm from '@/components/OrderForm';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 
+// Keep legacy types for compatibility
 export interface AccessCode {
   code: string;
   municipio: string;
@@ -15,121 +17,115 @@ export interface RegisteredUser {
   password: string;
   userType: 'funcionario' | 'diretor';
   name: string;
-  codigoAcesso: string; // referência ao código de acesso (município)
+  codigoAcesso: string;
 }
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState<'login' | 'order' | 'approval' | 'approved'>('login');
-  const [userInfo, setUserInfo] = useState({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '', name: '' });
-  const [approvedOrders, setApprovedOrders] = useState<any[]>([]);
-  const [allOrdersHistory, setAllOrdersHistory] = useState<any[]>([]);
+  const { userInfo, loading, signOut } = useAuth();
+  const { pedidos, pendingOrders, processedOrders, createPedido, approvePedido } = usePedidos(userInfo);
+  const [currentPage, setCurrentPage] = useState<'order' | 'approval' | 'approved'>('order');
 
-  const pendingOrders = allOrdersHistory.filter(
-    (o: any) => o.status === 'pending' && (!userInfo.codigoAcesso || o.codigoAcesso === userInfo.codigoAcesso)
-  );
-  const [accessCodes, setAccessCodes] = useState<AccessCode[]>([
-    { code: '0001', municipio: 'Sede' },
-    { code: '2601', municipio: 'Jucás' },
-  ]);
-  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([
-    { username: 'Administrador', password: 'admin123', userType: 'diretor', name: 'Administrador', codigoAcesso: '0001' },
-    { username: 'Funcionario', password: 'func123', userType: 'funcionario', name: 'Funcionário Padrão', codigoAcesso: '0001' },
-  ]);
+  // Show login if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleLogin = (username: string, password: string, userType: string, codigoAcesso: string, municipio: string, displayName?: string) => {
-    setUserInfo({ username, password, userType, codigoAcesso, municipio, name: displayName || username });
-    if (userType === 'funcionario') {
-      setCurrentPage('order');
-    } else if (userType === 'diretor') {
-      setCurrentPage('approval');
+  if (!userInfo) {
+    return <LoginForm />;
+  }
+
+  // Build legacy-compatible userInfo object for existing components
+  const legacyUserInfo = {
+    username: userInfo.username,
+    password: '',
+    userType: userInfo.userType,
+    codigoAcesso: userInfo.codigoAcesso,
+    municipio: userInfo.municipio,
+    name: userInfo.displayName,
+  };
+
+  const handleOrderSubmit = async (data: any) => {
+    const { error } = await createPedido(data);
+    if (error) {
+      console.error('Error creating pedido:', error);
     }
   };
 
-  const handleOrderSubmit = (data: any) => {
-    const newOrder = {
-      ...data,
-      id: Date.now(),
-      codigoAcesso: userInfo.codigoAcesso,
-      municipio: userInfo.municipio,
-      status: 'pending',
-      solicitante: data.solicitante ?? '',
-    };
-    setAllOrdersHistory(prev => [...prev, newOrder]);
-    setCurrentPage('order');
+  const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
+    const dbStatus = status === 'approved' ? 'aprovado' : 'rejeitado';
+    const { error } = await approvePedido(orderId, dbStatus as 'aprovado' | 'rejeitado', comments);
+    if (error) {
+      console.error('Error approving pedido:', error);
+    }
   };
 
-  const handleOrderApproval = (orderId: number, status: 'approved' | 'rejected', comments?: string) => {
-    setAllOrdersHistory(prev => {
-      const orderToUpdate = prev.find((order: any) => order.id === orderId);
-      if (!orderToUpdate) return prev;
-      const updatedOrder = {
-        ...orderToUpdate,
-        status,
-        comments,
-        approvedAt: new Date().toLocaleString('pt-BR'),
-        solicitante: orderToUpdate.solicitante ?? '',
-      };
-      setApprovedOrders(approved => [...approved, updatedOrder]);
-      return prev.map((order: any) => (order.id === orderId ? updatedOrder : order));
-    });
+  const handleLogout = async () => {
+    await signOut();
   };
 
-  const handleLogout = () => {
-    setCurrentPage('login');
-    setUserInfo({ username: '', password: '', userType: '', codigoAcesso: '', municipio: '', name: '' });
-  };
+  // Map DB pedidos to legacy format for existing components
+  const mapPedidoToLegacy = (p: any) => ({
+    id: p.id,
+    produto: p.tipo_servico || '',
+    codigoDoPoste: p.codigo_poste || '',
+    solicitante: p.solicitante || '',
+    cpf: p.cpf || '',
+    Rua: p.rua || '',
+    Bairro: p.bairro || '',
+    localização: p.localizacao || '',
+    DatadaSolicitação: p.data_solicitacao || '',
+    tipoServico: p.tipo_servico || '',
+    tipoLampada: p.tipo_lampada || '',
+    observações: p.observacoes_atendimento || '',
+    comments: p.comments || p.observacoes_tecnico || '',
+    enviadoPor: userInfo.displayName,
+    dataEnvio: new Date(p.created_at).toLocaleString('pt-BR'),
+    status: p.status === 'aprovado' ? 'approved' : p.status === 'rejeitado' ? 'rejected' : 'pending',
+    municipio: userInfo.municipio,
+    codigoAcesso: userInfo.codigoAcesso,
+    approvedAt: p.data_aprovacao ? new Date(p.data_aprovacao).toLocaleString('pt-BR') : '',
+  });
 
-  const handleNavigateToApproved = () => {
-    setCurrentPage('approved');
-  };
+  const legacyPending = pendingOrders.map(mapPedidoToLegacy);
+  const legacyProcessed = processedOrders.map(mapPedidoToLegacy);
+  const legacyAll = pedidos.map(mapPedidoToLegacy);
 
-  const handleBackToOrders = () => {
-    setCurrentPage('order');
-  };
-
-  const handleRegisterUser = (user: RegisteredUser) => {
-    setRegisteredUsers(prev => [...prev, user]);
-  };
-
-  const handleRegisterAccessCode = (ac: AccessCode) => {
-    setAccessCodes(prev => [...prev, ac]);
-  };
+  // Auto-navigate based on role
+  const defaultPage = userInfo.userType === 'diretor' ? 'approval' : 'order';
+  const activePage = currentPage || defaultPage;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {currentPage === 'login' && (
-        <LoginForm 
-          onLogin={handleLogin} 
-          allOrders={allOrdersHistory} 
-          registeredUsers={registeredUsers}
-          accessCodes={accessCodes}
-          onRegisterUser={handleRegisterUser}
-          onRegisterAccessCode={handleRegisterAccessCode}
-        />
-      )}
-      {currentPage === 'order' && (
-        <OrderForm 
-          userInfo={userInfo} 
+      {activePage === 'order' && userInfo.userType === 'funcionario' && (
+        <OrderForm
+          userInfo={legacyUserInfo}
           onSubmit={handleOrderSubmit}
           onLogout={handleLogout}
-          onNavigateToApproved={handleNavigateToApproved}
+          onNavigateToApproved={() => setCurrentPage('approved')}
         />
       )}
-      {currentPage === 'approval' && (
-        <DirectorApproval 
-          orders={pendingOrders}
-          userInfo={userInfo}
+      {(activePage === 'approval' || (activePage === 'order' && userInfo.userType === 'diretor')) && userInfo.userType === 'diretor' && (
+        <DirectorApproval
+          orders={legacyPending}
+          userInfo={legacyUserInfo}
           onApprove={handleOrderApproval}
           onLogout={handleLogout}
         />
       )}
-      {currentPage === 'approved' && (
+      {activePage === 'approved' && (
         <ApprovedOrders
-          approvedOrders={approvedOrders}
-          userInfo={userInfo}
+          approvedOrders={legacyProcessed}
+          userInfo={legacyUserInfo}
           onLogout={handleLogout}
-          onBackToOrders={handleBackToOrders}
-          allOrders={allOrdersHistory}
+          onBackToOrders={() => setCurrentPage(userInfo.userType === 'diretor' ? 'approval' : 'order')}
+          allOrders={legacyAll}
         />
       )}
     </div>
