@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, User, Mail } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import logoIppark from '@/assets/logo-ippark.jpeg';
 import backgroundImage from '@/assets/tela-de-fundo.png';
 import { useToast } from '@/hooks/use-toast';

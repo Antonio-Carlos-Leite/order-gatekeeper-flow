@@ -45,9 +45,7 @@ const MaintenanceSection = () => {
   const [newAccessCode, setNewAccessCode] = useState('');
   const [newAccessMunicipio, setNewAccessMunicipio] = useState('');
 
-  // Maintenance admin credentials stored in DB as a special user
-  const MAINTENANCE_EMAIL = 'admin@sistema.com';
-  const MAINTENANCE_PASSWORD = 'Admin@123456';
+  // Maintenance uses the same Supabase auth
 
   const fetchEmpresas = async () => {
     const { data } = await supabase.from('empresas').select('*');
