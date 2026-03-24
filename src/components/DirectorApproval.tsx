@@ -14,6 +14,9 @@ interface DirectorApprovalProps {
   userInfo: { username: string; password: string; userType: string; codigoAcesso: string; municipio: string; name?: string };
   onApprove: (orderId: string | number, status: 'approved' | 'rejected', comments?: string) => void;
   onLogout: () => void;
+  onNavigateToApproved?: () => void;
+  onNavigateToEstoque?: () => void;
+  lowStockCount?: number;
 }
 
 const DirectorApproval = ({ orders, userInfo, onApprove, onLogout }: DirectorApprovalProps) => {
