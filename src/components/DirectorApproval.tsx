@@ -94,6 +94,7 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout, onNavigateToA
               Sair
             </Button>
           </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Lista de Pedidos */}
