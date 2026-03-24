@@ -35,6 +35,61 @@ export type Database = {
         }
         Relationships: []
       }
+      movimentacoes_estoque: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          id: string
+          origem: string
+          pedido_id: string | null
+          produto_id: string
+          quantidade: number
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id: string
+          id?: string
+          origem: string
+          pedido_id?: string | null
+          produto_id: string
+          quantidade: number
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          origem?: string
+          pedido_id?: string | null
+          produto_id?: string
+          quantidade?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pedidos: {
         Row: {
           aprovado_por: string | null
@@ -108,6 +163,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pedidos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          empresa_id: string
+          estoque_minimo: number
+          id: string
+          nome: string
+          quantidade_estoque: number
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          empresa_id: string
+          estoque_minimo?: number
+          id?: string
+          nome: string
+          quantidade_estoque?: number
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          empresa_id?: string
+          estoque_minimo?: number
+          id?: string
+          nome?: string
+          quantidade_estoque?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePedidos } from '@/hooks/usePedidos';
+import { useEstoque } from '@/hooks/useEstoque';
 import LoginForm from '@/components/LoginForm';
 import OrderForm from '@/components/OrderForm';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
+import EstoquePanel from '@/components/EstoquePanel';
 
-// Keep legacy types for compatibility
 export interface AccessCode {
   code: string;
   municipio: string;
@@ -23,9 +24,9 @@ export interface RegisteredUser {
 const Index = () => {
   const { userInfo, loading, signOut } = useAuth();
   const { pedidos, pendingOrders, processedOrders, createPedido, approvePedido } = usePedidos(userInfo);
-  const [currentPage, setCurrentPage] = useState<'order' | 'approval' | 'approved'>('order');
+  const estoque = useEstoque(userInfo);
+  const [currentPage, setCurrentPage] = useState<'order' | 'approval' | 'approved' | 'estoque'>('order');
 
-  // Show login if not authenticated
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -41,7 +42,6 @@ const Index = () => {
     return <LoginForm />;
   }
 
-  // Build legacy-compatible userInfo object for existing components
   const legacyUserInfo = {
     username: userInfo.username,
     password: '',
@@ -53,24 +53,19 @@ const Index = () => {
 
   const handleOrderSubmit = async (data: any) => {
     const { error } = await createPedido(data);
-    if (error) {
-      console.error('Error creating pedido:', error);
-    }
+    if (error) console.error('Error creating pedido:', error);
   };
 
   const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
     const dbStatus = status === 'approved' ? 'aprovado' : 'rejeitado';
     const { error } = await approvePedido(orderId, dbStatus as 'aprovado' | 'rejeitado', comments);
-    if (error) {
-      console.error('Error approving pedido:', error);
-    }
+    if (error) console.error('Error approving pedido:', error);
   };
 
   const handleLogout = async () => {
     await signOut();
   };
 
-  // Map DB pedidos to legacy format for existing components
   const mapPedidoToLegacy = (p: any) => ({
     id: p.id,
     produto: p.tipo_servico || '',
@@ -97,9 +92,7 @@ const Index = () => {
   const legacyProcessed = processedOrders.map(mapPedidoToLegacy);
   const legacyAll = pedidos.map(mapPedidoToLegacy);
 
-  // Auto-navigate based on role
-  const defaultPage = userInfo.userType === 'diretor' ? 'approval' : 'order';
-  const activePage = currentPage || defaultPage;
+  const activePage = currentPage || (userInfo.userType === 'diretor' ? 'approval' : 'order');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -117,6 +110,9 @@ const Index = () => {
           userInfo={legacyUserInfo}
           onApprove={handleOrderApproval}
           onLogout={handleLogout}
+          onNavigateToApproved={() => setCurrentPage('approved')}
+          onNavigateToEstoque={() => setCurrentPage('estoque')}
+          lowStockCount={estoque.produtosEstoqueBaixo.length}
         />
       )}
       {activePage === 'approved' && (
@@ -126,6 +122,16 @@ const Index = () => {
           onLogout={handleLogout}
           onBackToOrders={() => setCurrentPage(userInfo.userType === 'diretor' ? 'approval' : 'order')}
           allOrders={legacyAll}
+        />
+      )}
+      {activePage === 'estoque' && userInfo.userType === 'diretor' && (
+        <EstoquePanel
+          produtos={estoque.produtos}
+          movimentacoes={estoque.movimentacoes}
+          produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
+          onAddProduto={estoque.addProduto}
+          onAddEntrada={estoque.addEntrada}
+          onBack={() => setCurrentPage('approval')}
         />
       )}
     </div>
