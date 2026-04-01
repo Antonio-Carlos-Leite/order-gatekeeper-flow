@@ -28,6 +28,26 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
     fetchPedidos();
   }, [fetchPedidos]);
 
+  // Realtime subscription
+  useEffect(() => {
+    if (!userInfo) return;
+
+    const channel = supabase
+      .channel('pedidos-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pedidos' },
+        () => {
+          fetchPedidos();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userInfo, fetchPedidos]);
+
   const createPedido = async (pedidoData: any) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
     

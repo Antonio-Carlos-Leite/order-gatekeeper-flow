@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator';
-import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Produto, Movimentacao } from '@/hooks/useEstoque';
 
@@ -20,7 +19,7 @@ interface EstoquePanelProps {
   onBack: () => void;
 }
 
-const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada, onBack }: EstoquePanelProps) => {
+const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada }: EstoquePanelProps) => {
   const [nomeProduto, setNomeProduto] = useState('');
   const [descProduto, setDescProduto] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
@@ -58,18 +57,8 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
   const getProdutoNome = (id: string) => produtos.find(p => p.id === id)?.nome || '—';
 
   return (
-    <div className="min-h-screen p-4">
+    <div>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestão de Estoque</h1>
-            <p className="text-muted-foreground">{produtos.length} produtos cadastrados</p>
-          </div>
-        </div>
 
         {/* Alertas de estoque baixo */}
         {produtosEstoqueBaixo.length > 0 && (
