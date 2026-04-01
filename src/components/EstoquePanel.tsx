@@ -58,18 +58,8 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
   const getProdutoNome = (id: string) => produtos.find(p => p.id === id)?.nome || '—';
 
   return (
-    <div className="min-h-screen p-4">
+    <div>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestão de Estoque</h1>
-            <p className="text-muted-foreground">{produtos.length} produtos cadastrados</p>
-          </div>
-        </div>
 
         {/* Alertas de estoque baixo */}
         {produtosEstoqueBaixo.length > 0 && (
