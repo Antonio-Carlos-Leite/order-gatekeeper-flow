@@ -63,38 +63,8 @@ const DirectorApproval = ({ orders, userInfo, onApprove, onLogout, onNavigateToA
   };
 
   return (
-    <div className="min-h-screen p-4">
+    <div>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Painel do Diretor</h1>
-            <p className="text-gray-600">Usuário: {userInfo.name || userInfo.username} (Diretor) - Município: {userInfo.municipio} - {orders.length} pedidos pendentes</p>
-          </div>
-          <div className="flex gap-2">
-            {onNavigateToApproved && (
-              <Button variant="outline" onClick={onNavigateToApproved} className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Processados
-              </Button>
-            )}
-            {onNavigateToEstoque && (
-              <Button variant="outline" onClick={onNavigateToEstoque} className="flex items-center gap-2 relative">
-                <Package className="w-4 h-4" />
-                Estoque
-                {lowStockCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {lowStockCount}
-                  </span>
-                )}
-              </Button>
-            )}
-            <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Sair
-            </Button>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Lista de Pedidos */}
