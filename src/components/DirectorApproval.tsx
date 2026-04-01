@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { LogOut, CheckCircle, XCircle, Clock, FileText, User, Calendar, Package, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, User, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface DirectorApprovalProps {
