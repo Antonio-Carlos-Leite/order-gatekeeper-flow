@@ -3,7 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePedidos } from '@/hooks/usePedidos';
 import { useEstoque } from '@/hooks/useEstoque';
 import LoginForm from '@/components/LoginForm';
+import AppHeader from '@/components/AppHeader';
 import OrderForm from '@/components/OrderForm';
+import MeusPedidos from '@/components/MeusPedidos';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
@@ -21,11 +23,13 @@ export interface RegisteredUser {
   codigoAcesso: string;
 }
 
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque';
+
 const Index = () => {
   const { userInfo, loading, signOut } = useAuth();
   const { pedidos, pendingOrders, processedOrders, createPedido, approvePedido } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
-  const [currentPage, setCurrentPage] = useState<'order' | 'approval' | 'approved' | 'estoque'>('order');
+  const [currentPage, setCurrentPage] = useState<Page | null>(null);
 
   if (loading) {
     return (
@@ -53,7 +57,7 @@ const Index = () => {
 
   const handleOrderSubmit = async (data: any) => {
     const { error } = await createPedido(data);
-    if (error) console.error('Error creating pedido:', error);
+    if (error) throw error;
   };
 
   const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
@@ -92,48 +96,67 @@ const Index = () => {
   const legacyProcessed = processedOrders.map(mapPedidoToLegacy);
   const legacyAll = pedidos.map(mapPedidoToLegacy);
 
+  // Default page based on role
   const activePage = currentPage || (userInfo.userType === 'diretor' ? 'approval' : 'order');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {activePage === 'order' && userInfo.userType === 'funcionario' && (
-        <OrderForm
-          userInfo={legacyUserInfo}
-          onSubmit={handleOrderSubmit}
-          onLogout={handleLogout}
-          onNavigateToApproved={() => setCurrentPage('approved')}
-        />
-      )}
-      {(activePage === 'approval' || (activePage === 'order' && userInfo.userType === 'diretor')) && userInfo.userType === 'diretor' && (
-        <DirectorApproval
-          orders={legacyPending}
-          userInfo={legacyUserInfo}
-          onApprove={handleOrderApproval}
-          onLogout={handleLogout}
-          onNavigateToApproved={() => setCurrentPage('approved')}
-          onNavigateToEstoque={() => setCurrentPage('estoque')}
-          lowStockCount={estoque.produtosEstoqueBaixo.length}
-        />
-      )}
-      {activePage === 'approved' && (
-        <ApprovedOrders
-          approvedOrders={legacyProcessed}
-          userInfo={legacyUserInfo}
-          onLogout={handleLogout}
-          onBackToOrders={() => setCurrentPage(userInfo.userType === 'diretor' ? 'approval' : 'order')}
-          allOrders={legacyAll}
-        />
-      )}
-      {activePage === 'estoque' && userInfo.userType === 'diretor' && (
-        <EstoquePanel
-          produtos={estoque.produtos}
-          movimentacoes={estoque.movimentacoes}
-          produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
-          onAddProduto={estoque.addProduto}
-          onAddEntrada={estoque.addEntrada}
-          onBack={() => setCurrentPage('approval')}
-        />
-      )}
+      <AppHeader
+        userInfo={userInfo}
+        currentPage={activePage}
+        onNavigate={setCurrentPage}
+        onLogout={handleLogout}
+        pendingCount={pendingOrders.length}
+        lowStockCount={estoque.produtosEstoqueBaixo.length}
+      />
+
+      <main className="max-w-7xl mx-auto p-4">
+        {activePage === 'order' && userInfo.userType === 'funcionario' && (
+          <OrderForm
+            userInfo={legacyUserInfo}
+            onSubmit={handleOrderSubmit}
+            onLogout={handleLogout}
+            onNavigateToApproved={() => setCurrentPage('approved')}
+          />
+        )}
+
+        {activePage === 'meus-pedidos' && userInfo.userType === 'funcionario' && (
+          <MeusPedidos pedidos={legacyAll} />
+        )}
+
+        {(activePage === 'approval' || (activePage === 'order' && userInfo.userType === 'diretor')) && userInfo.userType === 'diretor' && (
+          <DirectorApproval
+            orders={legacyPending}
+            userInfo={legacyUserInfo}
+            onApprove={handleOrderApproval}
+            onLogout={handleLogout}
+            onNavigateToApproved={() => setCurrentPage('approved')}
+            onNavigateToEstoque={() => setCurrentPage('estoque')}
+            lowStockCount={estoque.produtosEstoqueBaixo.length}
+          />
+        )}
+
+        {activePage === 'approved' && (
+          <ApprovedOrders
+            approvedOrders={legacyProcessed}
+            userInfo={legacyUserInfo}
+            onLogout={handleLogout}
+            onBackToOrders={() => setCurrentPage(userInfo.userType === 'diretor' ? 'approval' : 'order')}
+            allOrders={legacyAll}
+          />
+        )}
+
+        {activePage === 'estoque' && userInfo.userType === 'diretor' && (
+          <EstoquePanel
+            produtos={estoque.produtos}
+            movimentacoes={estoque.movimentacoes}
+            produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
+            onAddProduto={estoque.addProduto}
+            onAddEntrada={estoque.addEntrada}
+            onBack={() => setCurrentPage('approval')}
+          />
+        )}
+      </main>
     </div>
   );
 };
