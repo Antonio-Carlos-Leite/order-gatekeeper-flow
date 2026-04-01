@@ -19,7 +19,7 @@ interface DirectorApprovalProps {
   lowStockCount?: number;
 }
 
-const DirectorApproval = ({ orders, userInfo, onApprove, onLogout, onNavigateToApproved, onNavigateToEstoque, lowStockCount = 0 }: DirectorApprovalProps) => {
+const DirectorApproval = ({ orders, onApprove }: DirectorApprovalProps) => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [comments, setComments] = useState('');
   const { toast } = useToast();
