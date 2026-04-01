@@ -19,7 +19,7 @@ interface EstoquePanelProps {
   onBack: () => void;
 }
 
-const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada, onBack }: EstoquePanelProps) => {
+const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada }: EstoquePanelProps) => {
   const [nomeProduto, setNomeProduto] = useState('');
   const [descProduto, setDescProduto] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
