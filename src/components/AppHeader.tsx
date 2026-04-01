@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, FileText, CheckCircle, ClipboardList, Package, AlertTriangle, PlusCircle } from 'lucide-react';
+import { LogOut, FileText, CheckCircle, ClipboardList, Package, PlusCircle } from 'lucide-react';
 
 type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque';
 
