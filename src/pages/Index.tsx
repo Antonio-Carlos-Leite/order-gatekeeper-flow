@@ -173,6 +173,7 @@ const Index = () => {
             produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
             onAddProduto={estoque.addProduto}
             onAddEntrada={estoque.addEntrada}
+            onAddSaida={estoque.addSaida}
             onBack={() => setCurrentPage(defaultPage())}
           />
         )}
