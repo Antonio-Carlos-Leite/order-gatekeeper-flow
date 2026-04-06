@@ -76,12 +76,14 @@ export function useAuth() {
   };
 
   const validateCodigoAcesso = async (codigo: string): Promise<boolean> => {
-    const { data, error } = await supabase
-      .from('empresas')
-      .select('id')
-      .eq('codigo_acesso', codigo)
-      .maybeSingle();
-    return !error && !!data;
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-codigo-acesso', {
+        body: { codigo_acesso: codigo },
+      });
+      return !error && data?.valid === true;
+    } catch {
+      return false;
+    }
   };
 
   const signIn = async (email: string, password: string) => {

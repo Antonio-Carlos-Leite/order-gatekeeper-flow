@@ -28,24 +28,11 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
     fetchPedidos();
   }, [fetchPedidos]);
 
-  // Realtime subscription
+  // Poll for updates periodically instead of realtime (removed for security - CPF data)
   useEffect(() => {
     if (!userInfo) return;
-
-    const channel = supabase
-      .channel('pedidos-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'pedidos' },
-        () => {
-          fetchPedidos();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const interval = setInterval(fetchPedidos, 30000);
+    return () => clearInterval(interval);
   }, [userInfo, fetchPedidos]);
 
   const createPedido = async (pedidoData: any) => {
