@@ -7,7 +7,7 @@ export interface AuthUserInfo {
   userId: string;
   username: string;
   displayName: string;
-  userType: 'funcionario' | 'diretor';
+  userType: 'funcionario' | 'diretor' | 'estoque';
   empresaId: string;
   codigoAcesso: string;
   municipio: string;
@@ -22,7 +22,6 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        // Defer profile fetch to avoid deadlock
         setTimeout(() => fetchUserProfile(session.user), 0);
       } else {
         setUserInfo(null);
@@ -44,14 +43,12 @@ export function useAuth() {
 
   const fetchUserProfile = async (user: User) => {
     try {
-      // Fetch profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('*, empresas:empresa_id(codigo_acesso, nome)')
         .eq('user_id', user.id)
         .single();
 
-      // Fetch role
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -65,7 +62,7 @@ export function useAuth() {
           userId: user.id,
           username: profile.username,
           displayName: profile.display_name,
-          userType: (roleData?.role as 'funcionario' | 'diretor') || 'funcionario',
+          userType: (roleData?.role as 'funcionario' | 'diretor' | 'estoque') || 'funcionario',
           empresaId: profile.empresa_id,
           codigoAcesso: empresa?.codigo_acesso || '',
           municipio: empresa?.nome || '',
@@ -76,6 +73,15 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const validateCodigoAcesso = async (codigo: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('codigo_acesso', codigo)
+      .maybeSingle();
+    return !error && !!data;
   };
 
   const signIn = async (email: string, password: string) => {
@@ -103,5 +109,5 @@ export function useAuth() {
     setUserInfo(null);
   };
 
-  return { session, userInfo, loading, signIn, signUp, signOut };
+  return { session, userInfo, loading, signIn, signUp, signOut, validateCodigoAcesso };
 }

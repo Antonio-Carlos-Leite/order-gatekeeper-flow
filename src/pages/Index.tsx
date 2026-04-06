@@ -9,25 +9,13 @@ import MeusPedidos from '@/components/MeusPedidos';
 import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
+import OrdemServicoForm from '@/components/OrdemServicoForm';
 
-export interface AccessCode {
-  code: string;
-  municipio: string;
-}
-
-export interface RegisteredUser {
-  username: string;
-  password: string;
-  userType: 'funcionario' | 'diretor';
-  name: string;
-  codigoAcesso: string;
-}
-
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
 
 const Index = () => {
   const { userInfo, loading, signOut } = useAuth();
-  const { pedidos, pendingOrders, processedOrders, createPedido, approvePedido } = usePedidos(userInfo);
+  const { pedidos, pendingOrders, processedOrders, createPedido, createOrdemServico, approvePedido } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
 
@@ -60,9 +48,29 @@ const Index = () => {
     if (error) throw error;
   };
 
+  const handleOrdemServicoSubmit = async (data: any) => {
+    const { error } = await createOrdemServico(data);
+    if (error) throw error;
+  };
+
   const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
     const dbStatus = status === 'approved' ? 'aprovado' : 'rejeitado';
     const { error } = await approvePedido(orderId, dbStatus as 'aprovado' | 'rejeitado', comments);
+    
+    // Auto stock deduction on approval
+    if (!error && status === 'approved') {
+      const pedido = pedidos.find(p => p.id === orderId);
+      if (pedido?.tipo_lampada) {
+        // Find matching product by name
+        const produto = estoque.produtos.find(p => 
+          p.nome.toLowerCase() === pedido.tipo_lampada.toLowerCase()
+        );
+        if (produto && produto.quantidade_estoque > 0) {
+          await estoque.registrarSaidaPedido(produto.id, 1, orderId);
+        }
+      }
+    }
+    
     if (error) console.error('Error approving pedido:', error);
   };
 
@@ -90,6 +98,7 @@ const Index = () => {
     municipio: userInfo.municipio,
     codigoAcesso: userInfo.codigoAcesso,
     approvedAt: p.data_aprovacao ? new Date(p.data_aprovacao).toLocaleString('pt-BR') : '',
+    tipo: p.tipo,
   });
 
   const legacyPending = pendingOrders.map(mapPedidoToLegacy);
@@ -97,7 +106,14 @@ const Index = () => {
   const legacyAll = pedidos.map(mapPedidoToLegacy);
 
   // Default page based on role
-  const activePage = currentPage || (userInfo.userType === 'diretor' ? 'approval' : 'order');
+  const defaultPage = (): Page => {
+    if (userInfo.userType === 'diretor') return 'approval';
+    if (userInfo.userType === 'estoque') return 'estoque';
+    return 'order';
+  };
+  const activePage = currentPage || defaultPage();
+
+  const canAccessEstoque = userInfo.userType === 'diretor' || userInfo.userType === 'estoque';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -136,24 +152,28 @@ const Index = () => {
           />
         )}
 
+        {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
+          <OrdemServicoForm onSubmit={handleOrdemServicoSubmit} />
+        )}
+
         {activePage === 'approved' && (
           <ApprovedOrders
             approvedOrders={legacyProcessed}
             userInfo={legacyUserInfo}
             onLogout={handleLogout}
-            onBackToOrders={() => setCurrentPage(userInfo.userType === 'diretor' ? 'approval' : 'order')}
+            onBackToOrders={() => setCurrentPage(defaultPage())}
             allOrders={legacyAll}
           />
         )}
 
-        {activePage === 'estoque' && userInfo.userType === 'diretor' && (
+        {activePage === 'estoque' && canAccessEstoque && (
           <EstoquePanel
             produtos={estoque.produtos}
             movimentacoes={estoque.movimentacoes}
             produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
             onAddProduto={estoque.addProduto}
             onAddEntrada={estoque.addEntrada}
-            onBack={() => setCurrentPage('approval')}
+            onBack={() => setCurrentPage(defaultPage())}
           />
         )}
       </main>

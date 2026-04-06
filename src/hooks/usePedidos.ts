@@ -74,6 +74,34 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
     return { data, error };
   };
 
+  const createOrdemServico = async (pedidoData: any) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    
+    const { data, error } = await supabase.from('pedidos').insert({
+      empresa_id: userInfo.empresaId,
+      criado_por: userInfo.userId,
+      tipo: 'ordem_servico' as const,
+      status: 'aprovado' as const,
+      aprovado_por: userInfo.userId,
+      data_aprovacao: new Date().toISOString(),
+      solicitante: pedidoData.solicitante,
+      cpf: pedidoData.cpf,
+      rua: pedidoData.Rua,
+      bairro: pedidoData.Bairro,
+      localizacao: pedidoData.localização,
+      data_solicitacao: pedidoData.DatadaSolicitação,
+      tipo_servico: pedidoData.tipoServico,
+      tipo_lampada: pedidoData.tipoLampada,
+      codigo_poste: pedidoData.codigoDoPoste,
+      observacoes_atendimento: pedidoData.observações,
+    }).select().single();
+
+    if (!error) {
+      await fetchPedidos();
+    }
+    return { data, error };
+  };
+
   const approvePedido = async (pedidoId: string, status: 'aprovado' | 'rejeitado', comments?: string) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
 
@@ -94,5 +122,5 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
   const pendingOrders = pedidos.filter(p => p.status === 'aguardando_aprovacao');
   const processedOrders = pedidos.filter(p => p.status === 'aprovado' || p.status === 'rejeitado');
 
-  return { pedidos, pendingOrders, processedOrders, loading, createPedido, approvePedido, refetch: fetchPedidos };
+  return { pedidos, pendingOrders, processedOrders, loading, createPedido, createOrdemServico, approvePedido, refetch: fetchPedidos };
 }
