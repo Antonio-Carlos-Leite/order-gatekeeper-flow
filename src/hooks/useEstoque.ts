@@ -149,9 +149,8 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
 
     await refresh();
     return { error: null };
-  };
-      produto_id,
-      tipo: 'saida',
+
+
       quantidade,
       origem: 'pedido',
       pedido_id,
