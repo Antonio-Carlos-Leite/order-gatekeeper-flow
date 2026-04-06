@@ -72,24 +72,23 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
 
   const addEntrada = async (produto_id: string, quantidade: number) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
-    
-    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+
+    const { error: movErr } = await supabase.from('movimentacoes_estoque').insert({
       empresa_id: userInfo.empresaId,
       produto_id,
       tipo: 'entrada',
       quantidade,
       origem: 'manual',
     } as any);
-    
-    if (movError) return { error: movError };
+    if (movErr) return { error: movErr };
 
-    const produto = produtos.find(p => p.id === produto_id);
-    if (produto) {
-      const { error: updateError } = await supabase
+    const prod = produtos.find(p => p.id === produto_id);
+    if (prod) {
+      const { error: updErr } = await supabase
         .from('produtos')
-        .update({ quantidade_estoque: produto.quantidade_estoque + quantidade } as any)
+        .update({ quantidade_estoque: prod.quantidade_estoque + quantidade } as any)
         .eq('id', produto_id);
-      if (updateError) return { error: updateError };
+      if (updErr) return { error: updErr };
     }
 
     await refresh();
@@ -98,26 +97,25 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
 
   const addSaida = async (produto_id: string, quantidade: number) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
-    
-    const produto = produtos.find(p => p.id === produto_id);
-    if (produto && produto.quantidade_estoque < quantidade) {
+
+    const prod = produtos.find(p => p.id === produto_id);
+    if (prod && prod.quantidade_estoque < quantidade) {
       return { error: new Error('Quantidade insuficiente em estoque') };
     }
 
-    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+    const { error: movErr } = await supabase.from('movimentacoes_estoque').insert({
       empresa_id: userInfo.empresaId,
       produto_id,
       tipo: 'saida',
       quantidade,
       origem: 'manual',
     } as any);
-    
-    if (movError) return { error: movError };
+    if (movErr) return { error: movErr };
 
-    if (produto) {
+    if (prod) {
       await supabase
         .from('produtos')
-        .update({ quantidade_estoque: Math.max(0, produto.quantidade_estoque - quantidade) } as any)
+        .update({ quantidade_estoque: Math.max(0, prod.quantidade_estoque - quantidade) } as any)
         .eq('id', produto_id);
     }
 
@@ -127,8 +125,8 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
 
   const registrarSaidaPedido = async (produto_id: string, quantidade: number, pedido_id: string) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
-    
-    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+
+    const { error: movErr } = await supabase.from('movimentacoes_estoque').insert({
       empresa_id: userInfo.empresaId,
       produto_id,
       tipo: 'saida',
@@ -136,33 +134,13 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
       origem: 'pedido',
       pedido_id,
     } as any);
-    
-    if (movError) return { error: movError };
+    if (movErr) return { error: movErr };
 
-    const produto = produtos.find(p => p.id === produto_id);
-    if (produto) {
+    const prod = produtos.find(p => p.id === produto_id);
+    if (prod) {
       await supabase
         .from('produtos')
-        .update({ quantidade_estoque: Math.max(0, produto.quantidade_estoque - quantidade) } as any)
-        .eq('id', produto_id);
-    }
-
-    await refresh();
-    return { error: null };
-
-
-      quantidade,
-      origem: 'pedido',
-      pedido_id,
-    } as any);
-    
-    if (movError) return { error: movError };
-
-    const produto = produtos.find(p => p.id === produto_id);
-    if (produto) {
-      await supabase
-        .from('produtos')
-        .update({ quantidade_estoque: Math.max(0, produto.quantidade_estoque - quantidade) } as any)
+        .update({ quantidade_estoque: Math.max(0, prod.quantidade_estoque - quantidade) } as any)
         .eq('id', produto_id);
     }
 
