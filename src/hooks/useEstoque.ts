@@ -96,7 +96,59 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     return { error: null };
   };
 
+  const addSaida = async (produto_id: string, quantidade: number) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    
+    const produto = produtos.find(p => p.id === produto_id);
+    if (produto && produto.quantidade_estoque < quantidade) {
+      return { error: new Error('Quantidade insuficiente em estoque') };
+    }
+
+    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+      empresa_id: userInfo.empresaId,
+      produto_id,
+      tipo: 'saida',
+      quantidade,
+      origem: 'manual',
+    } as any);
+    
+    if (movError) return { error: movError };
+
+    if (produto) {
+      await supabase
+        .from('produtos')
+        .update({ quantidade_estoque: Math.max(0, produto.quantidade_estoque - quantidade) } as any)
+        .eq('id', produto_id);
+    }
+
+    await refresh();
+    return { error: null };
+  };
+
   const registrarSaidaPedido = async (produto_id: string, quantidade: number, pedido_id: string) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    
+    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+      empresa_id: userInfo.empresaId,
+      produto_id,
+      tipo: 'saida',
+      quantidade,
+      origem: 'pedido',
+      pedido_id,
+    } as any);
+    
+    if (movError) return { error: movError };
+
+    const produto = produtos.find(p => p.id === produto_id);
+    if (produto) {
+      await supabase
+        .from('produtos')
+        .update({ quantidade_estoque: Math.max(0, produto.quantidade_estoque - quantidade) } as any)
+        .eq('id', produto_id);
+    }
+
+    await refresh();
+    return { error: null };
     if (!userInfo) return { error: new Error('Not authenticated') };
     
     const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
@@ -131,6 +183,7 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     produtosEstoqueBaixo,
     addProduto,
     addEntrada,
+    addSaida,
     registrarSaidaPedido,
     refresh,
   };

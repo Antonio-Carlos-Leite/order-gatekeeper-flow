@@ -16,15 +16,18 @@ interface EstoquePanelProps {
   produtosEstoqueBaixo: Produto[];
   onAddProduto: (nome: string, descricao: string, estoque_minimo: number) => Promise<{ error: any }>;
   onAddEntrada: (produto_id: string, quantidade: number) => Promise<{ error: any }>;
+  onAddSaida: (produto_id: string, quantidade: number) => Promise<{ error: any }>;
   onBack: () => void;
 }
 
-const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada }: EstoquePanelProps) => {
+const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada, onAddSaida }: EstoquePanelProps) => {
   const [nomeProduto, setNomeProduto] = useState('');
   const [descProduto, setDescProduto] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
   const [entradaProdutoId, setEntradaProdutoId] = useState('');
   const [entradaQtd, setEntradaQtd] = useState('');
+  const [saidaProdutoId, setSaidaProdutoId] = useState('');
+  const [saidaQtd, setSaidaQtd] = useState('');
   const { toast } = useToast();
 
   const handleAddProduto = async (e: React.FormEvent) => {
@@ -51,6 +54,19 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
       toast({ title: "Entrada registrada!", description: `${entradaQtd} unidades adicionadas.` });
       setEntradaProdutoId('');
       setEntradaQtd('');
+    }
+  };
+
+  const handleAddSaida = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!saidaProdutoId || !saidaQtd) return;
+    const { error } = await onAddSaida(saidaProdutoId, parseInt(saidaQtd));
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Saída registrada!", description: `${saidaQtd} unidades removidas.` });
+      setSaidaProdutoId('');
+      setSaidaQtd('');
     }
   };
 
@@ -81,7 +97,7 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Cadastrar produto */}
           <Card className="shadow-lg border-0 bg-card">
             <CardHeader>
@@ -140,6 +156,39 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
                   <ArrowDown className="w-4 h-4 mr-2" />
                   Registrar Entrada
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Registrar saída manual */}
+          <Card className="shadow-lg border-0 bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <ArrowUp className="w-5 h-5" />
+                Registrar Saída
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddSaida} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Produto</Label>
+                  <Select value={saidaProdutoId} onValueChange={setSaidaProdutoId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
+                    <SelectContent>
+                      {produtos.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.nome} (atual: {p.quantidade_estoque})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Quantidade</Label>
+                  <Input type="number" min="1" placeholder="Quantidade" value={saidaQtd} onChange={e => setSaidaQtd(e.target.value)} required />
+                </div>
+                <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+                  <ArrowUp className="w-4 h-4 mr-2" />
+                  Registrar Saída
                 </Button>
               </form>
             </CardContent>
