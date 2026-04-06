@@ -148,8 +148,8 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     }
 
     await refresh();
+    return { error: null };
   };
-      empresa_id: userInfo.empresaId,
       produto_id,
       tipo: 'saida',
       quantidade,
