@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, FileText, CheckCircle, ClipboardList, Package, PlusCircle } from 'lucide-react';
+import { LogOut, FileText, CheckCircle, ClipboardList, Package, PlusCircle, Wrench } from 'lucide-react';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
 
 interface AppHeaderProps {
   userInfo: {
     displayName: string;
     username: string;
-    userType: 'funcionario' | 'diretor';
+    userType: 'funcionario' | 'diretor' | 'estoque';
     municipio: string;
     codigoAcesso: string;
   };
@@ -22,6 +22,9 @@ interface AppHeaderProps {
 const AppHeader = ({ userInfo, currentPage, onNavigate, onLogout, pendingCount = 0, lowStockCount = 0 }: AppHeaderProps) => {
   const isFuncionario = userInfo.userType === 'funcionario';
   const isDiretor = userInfo.userType === 'diretor';
+  const isEstoque = userInfo.userType === 'estoque';
+
+  const roleLabel = isDiretor ? 'Diretor' : isEstoque ? 'Estoque' : 'Funcionário';
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
@@ -32,7 +35,7 @@ const AppHeader = ({ userInfo, currentPage, onNavigate, onLogout, pendingCount =
               IPPARK - {userInfo.municipio}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {userInfo.displayName} · {isDiretor ? 'Diretor' : 'Funcionário'} · Código: {userInfo.codigoAcesso}
+              {userInfo.displayName} · {roleLabel} · Código: {userInfo.codigoAcesso}
             </p>
           </div>
           <Button variant="outline" onClick={onLogout} size="sm" className="flex items-center gap-2">
@@ -53,6 +56,12 @@ const AppHeader = ({ userInfo, currentPage, onNavigate, onLogout, pendingCount =
             <>
               <NavButton active={currentPage === 'approval'} onClick={() => onNavigate('approval')} icon={<FileText className="w-4 h-4" />} label="Pendentes" badge={pendingCount > 0 ? pendingCount : undefined} />
               <NavButton active={currentPage === 'approved'} onClick={() => onNavigate('approved')} icon={<CheckCircle className="w-4 h-4" />} label="Processados" />
+              <NavButton active={currentPage === 'ordem-servico'} onClick={() => onNavigate('ordem-servico')} icon={<Wrench className="w-4 h-4" />} label="Ordem de Serviço" />
+              <NavButton active={currentPage === 'estoque'} onClick={() => onNavigate('estoque')} icon={<Package className="w-4 h-4" />} label="Estoque" badge={lowStockCount > 0 ? lowStockCount : undefined} badgeVariant="destructive" />
+            </>
+          )}
+          {isEstoque && (
+            <>
               <NavButton active={currentPage === 'estoque'} onClick={() => onNavigate('estoque')} icon={<Package className="w-4 h-4" />} label="Estoque" badge={lowStockCount > 0 ? lowStockCount : undefined} badgeVariant="destructive" />
             </>
           )}

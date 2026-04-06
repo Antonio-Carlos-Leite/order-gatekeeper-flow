@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, KeyRound } from 'lucide-react';
 import logoIppark from '@/assets/logo-ippark.jpeg';
 import backgroundImage from '@/assets/tela-de-fundo.png';
 import { useToast } from '@/hooks/use-toast';
@@ -11,16 +11,17 @@ import { useAuth } from '@/hooks/useAuth';
 import MaintenanceSection from './MaintenanceSection';
 
 const LoginForm = () => {
+  const [codigoAcesso, setCodigoAcesso] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, validateCodigoAcesso } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!codigoAcesso || !email || !password) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -30,6 +31,18 @@ const LoginForm = () => {
     }
 
     setIsLoading(true);
+
+    // Validate codigo_acesso first
+    const empresaValid = await validateCodigoAcesso(codigoAcesso);
+    if (!empresaValid) {
+      setIsLoading(false);
+      toast({
+        title: "Código inválido",
+        description: "O código de acesso informado não corresponde a nenhuma empresa.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const { error } = await signIn(email, password);
     
@@ -69,11 +82,28 @@ const LoginForm = () => {
           <CardHeader className="space-y-1 pb-2 pt-4">
             <CardTitle className="text-xl text-center">Entrar</CardTitle>
             <CardDescription className="text-center text-xs">
-              Digite seu email e senha para acessar
+              Digite o código da empresa, email e senha para acessar
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-4">
             <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="codigoAcesso">Código de Acesso</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="codigoAcesso"
+                    type="text"
+                    placeholder="Código da empresa (4 dígitos)"
+                    value={codigoAcesso}
+                    onChange={(e) => setCodigoAcesso(e.target.value)}
+                    className="pl-10 bg-white/80 backdrop-blur-none"
+                    maxLength={4}
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
