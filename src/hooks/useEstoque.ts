@@ -148,10 +148,7 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     }
 
     await refresh();
-    return { error: null };
-    if (!userInfo) return { error: new Error('Not authenticated') };
-    
-    const { error: movError } = await supabase.from('movimentacoes_estoque').insert({
+  };
       empresa_id: userInfo.empresaId,
       produto_id,
       tipo: 'saida',
