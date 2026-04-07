@@ -14,7 +14,7 @@ import OrdemServicoForm from '@/components/OrdemServicoForm';
 type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
 
 const Index = () => {
-  const { userInfo, loading, signOut } = useAuth();
+  const { userInfo, loading, signOut, maintenanceMode } = useAuth();
   const { pedidos, pendingOrders, processedOrders, createPedido, createOrdemServico, approvePedido } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
