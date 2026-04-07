@@ -31,7 +31,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'cadastro' | 'codigos'>('codigos');
   const { toast } = useToast();
-  const { signIn, signUp, signOut } = useAuth();
+  const { signIn, signUp, signOut, setMaintenanceMode } = useAuth();
 
   // Data from DB
   const [empresas, setEmpresas] = useState<EmpresaRow[]>([]);
