@@ -10,11 +10,12 @@ import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
 import OrdemServicoForm from '@/components/OrdemServicoForm';
+import MaintenanceSection from '@/components/MaintenanceSection';
 
 type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
 
 const Index = () => {
-  const { userInfo, loading, signOut } = useAuth();
+  const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
   const { pedidos, pendingOrders, processedOrders, createPedido, createOrdemServico, approvePedido } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
@@ -32,6 +33,10 @@ const Index = () => {
 
   if (!userInfo) {
     return <LoginForm />;
+  }
+
+  if (maintenanceMode) {
+    return <MaintenanceSection onExit={() => { setMaintenanceMode(false); signOut(); }} />;
   }
 
   const legacyUserInfo = {
