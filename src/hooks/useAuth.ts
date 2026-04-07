@@ -17,6 +17,7 @@ export function useAuth() {
   const [session, setSession] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<AuthUserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -111,5 +112,5 @@ export function useAuth() {
     setUserInfo(null);
   };
 
-  return { session, userInfo, loading, signIn, signUp, signOut, validateCodigoAcesso };
+  return { session, userInfo, loading, signIn, signUp, signOut, validateCodigoAcesso, maintenanceMode, setMaintenanceMode };
 }
