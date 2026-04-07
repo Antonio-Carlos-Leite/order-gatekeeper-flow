@@ -82,6 +82,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
     if (error) {
       toast({ title: "Acesso negado", description: "Email ou senha incorretos.", variant: "destructive" });
     } else {
+      setMaintenanceMode(true);
       setIsAuthenticated(true);
       toast({ title: "Acesso autorizado", description: "Bem-vindo à área de manutenção!" });
     }
