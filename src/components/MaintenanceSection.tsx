@@ -19,9 +19,13 @@ interface EmpresaRow {
   nome: string;
 }
 
-const MaintenanceSection = () => {
-  const [showMaintenance, setShowMaintenance] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+interface MaintenanceSectionProps {
+  onExit?: () => void;
+}
+
+const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
+  const [showMaintenance, setShowMaintenance] = useState(!!onExit);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!onExit);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
