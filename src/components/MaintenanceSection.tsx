@@ -183,6 +183,111 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
     return empresas.find(e => e.id === empresaId)?.codigo_acesso || 'N/A';
   };
 
+  const renderContent = () => (
+    <>
+      {activeTab === 'codigos' && (
+        <div className="space-y-6">
+          <Card className="border border-green-200 bg-green-50/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2"><MapPin className="w-5 h-5" />Novo Código de Acesso</CardTitle>
+              <CardDescription>Cada código de acesso representa um município</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleRegisterAccessCode} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Código de Acesso (4 dígitos)</Label>
+                    <Input placeholder="Ex: 2601" value={newAccessCode} onChange={(e) => setNewAccessCode(e.target.value.replace(/\D/g, '').slice(0, 4))} maxLength={4} className="font-mono tracking-widest" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Município</Label>
+                    <Input placeholder="Ex: Jucás" value={newAccessMunicipio} onChange={(e) => setNewAccessMunicipio(e.target.value)} required />
+                  </div>
+                </div>
+                <Button type="submit" className="bg-green-600 hover:bg-green-700 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />Cadastrar Código de Acesso
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Códigos de Acesso Cadastrados ({empresas.length})</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Código</TableHead><TableHead>Município</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {empresas.map((emp) => (
+                    <TableRow key={emp.id}>
+                      <TableCell className="font-mono font-bold">{emp.codigo_acesso}</TableCell>
+                      <TableCell><Badge variant="outline" className="flex items-center gap-1 w-fit"><MapPin className="w-3 h-3" />{emp.nome}</Badge></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {activeTab === 'cadastro' && (
+        <div className="space-y-6">
+          <Card className="border border-blue-200 bg-blue-50/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2"><UserPlus className="w-5 h-5" />Novo Usuário</CardTitle>
+              <CardDescription>Vincule o usuário a um município (empresa)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleRegisterUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label>Nome Completo</Label><Input placeholder="Nome do usuário" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} required /></div>
+                  <div className="space-y-2"><Label>Email</Label><Input type="email" placeholder="email@exemplo.com" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} required /></div>
+                  <div className="space-y-2"><Label>Usuário (Nome de Login)</Label><Input placeholder="Nome de usuário" value={newUserUsername} onChange={(e) => setNewUserUsername(e.target.value)} required /></div>
+                  <div className="space-y-2"><Label>Senha (mín. 6 caracteres)</Label><Input type="password" placeholder="Senha do usuário" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} required /></div>
+                  <div className="space-y-2">
+                    <Label>Município (Empresa)</Label>
+                    <Select value={newUserEmpresaId} onValueChange={setNewUserEmpresaId}>
+                      <SelectTrigger><SelectValue placeholder="Selecione o município" /></SelectTrigger>
+                      <SelectContent>{empresas.map(emp => (<SelectItem key={emp.id} value={emp.id}>{emp.codigo_acesso} - {emp.nome}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo de Usuário</Label>
+                    <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor')} className="flex gap-4 pt-2">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="funcionario" id="new-func" /><Label htmlFor="new-func" className="flex items-center gap-1 cursor-pointer"><Users className="w-4 h-4" /> Funcionário</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="diretor" id="new-dir" /><Label htmlFor="new-dir" className="flex items-center gap-1 cursor-pointer"><Crown className="w-4 h-4" /> Diretor</Label></div>
+                    </RadioGroup>
+                  </div>
+                </div>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2" disabled={isLoading}><UserPlus className="w-4 h-4" />{isLoading ? 'Cadastrando...' : 'Cadastrar Usuário'}</Button>
+              </form>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Usuários Cadastrados ({users.length})</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Código</TableHead><TableHead>Município</TableHead><TableHead>Nome</TableHead><TableHead>Usuário</TableHead><TableHead>Tipo</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {users.map((user) => {
+                    const role = user.user_roles?.[0]?.role || 'funcionario';
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-mono font-bold">{getEmpresaCodigo(user.empresa_id)}</TableCell>
+                        <TableCell><Badge variant="outline" className="flex items-center gap-1 w-fit"><MapPin className="w-3 h-3" />{getEmpresaNome(user.empresa_id)}</Badge></TableCell>
+                        <TableCell>{user.display_name}</TableCell>
+                        <TableCell>{user.username}</TableCell>
+                        <TableCell><Badge className={role === 'diretor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>{role === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}</Badge></TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
+  );
+
   // Full-page mode (called from Index.tsx when already authenticated)
   if (onExit) {
     return (
