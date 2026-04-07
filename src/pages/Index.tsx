@@ -10,6 +10,16 @@ import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
 import OrdemServicoForm from '@/components/OrdemServicoForm';
+import MaintenanceSection from '@/components/MaintenanceSection';
+import { useEstoque } from '@/hooks/useEstoque';
+import LoginForm from '@/components/LoginForm';
+import AppHeader from '@/components/AppHeader';
+import OrderForm from '@/components/OrderForm';
+import MeusPedidos from '@/components/MeusPedidos';
+import DirectorApproval from '@/components/DirectorApproval';
+import ApprovedOrders from '@/components/ApprovedOrders';
+import EstoquePanel from '@/components/EstoquePanel';
+import OrdemServicoForm from '@/components/OrdemServicoForm';
 
 type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
 
