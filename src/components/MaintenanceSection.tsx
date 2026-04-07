@@ -88,11 +88,15 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   };
 
   const handleLogoutMaintenance = async () => {
-    await signOut();
-    setIsAuthenticated(false);
-    setEmail('');
-    setPassword('');
-    setShowMaintenance(false);
+    if (onExit) {
+      onExit();
+    } else {
+      await signOut();
+      setIsAuthenticated(false);
+      setEmail('');
+      setPassword('');
+      setShowMaintenance(false);
+    }
     toast({ title: "Logout realizado", description: "Você saiu da área de manutenção." });
   };
 
