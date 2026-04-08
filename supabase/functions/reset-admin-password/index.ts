@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,10 +20,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     // Verify the requesting user is a diretor
     const authHeader = req.headers.get("Authorization");
@@ -34,9 +32,11 @@ Deno.serve(async (req) => {
       );
     }
 
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
-    
+
     if (!caller) {
       return new Response(
         JSON.stringify({ success: false, error: "Não autorizado" }),
@@ -44,7 +44,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if caller is diretor
     const { data: roleData } = await supabaseAdmin
       .from("user_roles")
       .select("role")
@@ -58,13 +57,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { error } = await supabaseAdmin.auth.admin.updateUser(user_id, {
-      password: new_password,
-    });
+    // Use GoTrue admin API directly
+    const response = await fetch(
+      `${supabaseUrl}/auth/v1/admin/users/${user_id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "apikey": serviceRoleKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password: new_password }),
+      }
+    );
 
-    if (error) {
+    if (!response.ok) {
+      const err = await response.json();
       return new Response(
-        JSON.stringify({ success: false, error: error.message }),
+        JSON.stringify({ success: false, error: err.message || "Erro ao resetar senha" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }
