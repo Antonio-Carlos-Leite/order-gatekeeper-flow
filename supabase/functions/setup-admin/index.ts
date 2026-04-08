@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,20 +11,28 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Use the GoTrue admin API directly
+    const response = await fetch(
+      `${supabaseUrl}/auth/v1/admin/users/12f579da-0870-41fe-be1d-b42989577682`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "apikey": serviceRoleKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password: "admin123456" }),
+      }
     );
 
-    // Reset admin password
-    const { error } = await supabaseAdmin.auth.admin.updateUser(
-      "12f579da-0870-41fe-be1d-b42989577682",
-      { password: "admin123456" }
-    );
+    const result = await response.json();
 
-    if (error) {
+    if (!response.ok) {
       return new Response(
-        JSON.stringify({ success: false, error: error.message }),
+        JSON.stringify({ success: false, error: result }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }
