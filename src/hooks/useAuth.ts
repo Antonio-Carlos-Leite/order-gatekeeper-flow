@@ -26,6 +26,15 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const [maintenanceMode, _setMaintenanceMode] = useState(() => getMaintenanceMode());
 
+  // Re-sync from sessionStorage on every render cycle (for same-tab updates)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = getMaintenanceMode();
+      _setMaintenanceMode(prev => prev !== current ? current : prev);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
   const setMaintenanceMode = useCallback((value: boolean) => {
     if (value) {
       sessionStorage.setItem(MAINTENANCE_KEY, 'true');
