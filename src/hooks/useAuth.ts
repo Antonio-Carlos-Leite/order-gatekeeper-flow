@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -13,11 +13,34 @@ export interface AuthUserInfo {
   municipio: string;
 }
 
+// Shared across all hook instances
+const MAINTENANCE_KEY = 'maintenanceMode';
+
+function getMaintenanceMode(): boolean {
+  return sessionStorage.getItem(MAINTENANCE_KEY) === 'true';
+}
+
 export function useAuth() {
   const [session, setSession] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<AuthUserInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMode, _setMaintenanceMode] = useState(() => getMaintenanceMode());
+
+  const setMaintenanceMode = useCallback((value: boolean) => {
+    if (value) {
+      sessionStorage.setItem(MAINTENANCE_KEY, 'true');
+    } else {
+      sessionStorage.removeItem(MAINTENANCE_KEY);
+    }
+    _setMaintenanceMode(value);
+  }, []);
+
+  // Sync across instances via storage event
+  useEffect(() => {
+    const onStorage = () => _setMaintenanceMode(getMaintenanceMode());
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -107,6 +130,8 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem(MAINTENANCE_KEY);
+    _setMaintenanceMode(false);
     await supabase.auth.signOut();
     setSession(null);
     setUserInfo(null);
