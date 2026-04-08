@@ -76,13 +76,16 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
     }
     setIsLoading(true);
     
+    // Set maintenance mode BEFORE signing in to prevent dashboard redirect
+    setMaintenanceMode(true);
+    
     const { error } = await signIn(email, password);
     setIsLoading(false);
     
     if (error) {
+      setMaintenanceMode(false);
       toast({ title: "Acesso negado", description: "Email ou senha incorretos.", variant: "destructive" });
     } else {
-      setMaintenanceMode(true);
       setIsAuthenticated(true);
       toast({ title: "Acesso autorizado", description: "Bem-vindo à área de manutenção!" });
     }
