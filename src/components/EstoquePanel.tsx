@@ -10,6 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle, Search, Edit, Trash2, Download, BarChart3, TrendingDown, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import type { Produto, Movimentacao } from '@/hooks/useEstoque';
 
 interface EstoquePanelProps {
