@@ -548,29 +548,66 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
           </CardContent>
         </Card>
 
-        {/* Backup - apenas diretores */}
+        {/* Gráfico de Movimentações */}
+        <Card className="shadow-lg border-0 bg-card mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Movimentações por Mês
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {chartData.every(d => d.entradas === 0 && d.saidas === 0) ? (
+              <p className="text-center text-muted-foreground py-8">Sem dados de movimentação para exibir</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="entradas" name="Entradas" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="saidas" name="Saídas" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gerar Backup - apenas diretores */}
         {isDiretor && (
           <Card className="shadow-lg border-0 bg-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                Backup do Estoque
+                Gerar Backup
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="outline" onClick={exportBackupJSON} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar JSON
-                </Button>
-                <Button variant="outline" onClick={exportBackupCSV} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar CSV
-                </Button>
-                <Button variant="outline" onClick={exportBackupExcel} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar Excel
-                </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm">Estoque (Produtos)</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={exportEstoquePDF} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> estoque.pdf
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={exportEstoqueExcel} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> estoque.xlsx
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm">Movimentações</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={exportMovimentacoesPDF} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> movimentacoes_estoque.pdf
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={exportMovimentacoesExcel} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> movimentacoes_estoque.xlsx
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
