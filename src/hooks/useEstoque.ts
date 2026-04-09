@@ -20,7 +20,10 @@ export interface Movimentacao {
   quantidade: number;
   origem: string;
   pedido_id: string | null;
+  usuario_id: string | null;
   created_at: string;
+  // joined
+  usuario_nome?: string;
 }
 
 export function useEstoque(userInfo: AuthUserInfo | null) {
@@ -43,8 +46,27 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
       .from('movimentacoes_estoque')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50);
-    if (data) setMovimentacoes(data as Movimentacao[]);
+      .limit(100);
+    
+    if (data) {
+      // Fetch user names for movimentacoes that have usuario_id
+      const userIds = [...new Set((data as any[]).filter(m => m.usuario_id).map(m => m.usuario_id))];
+      let userMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', userIds);
+        if (profiles) {
+          userMap = Object.fromEntries(profiles.map(p => [p.user_id, p.display_name]));
+        }
+      }
+      
+      setMovimentacoes((data as any[]).map(m => ({
+        ...m,
+        usuario_nome: m.usuario_id ? (userMap[m.usuario_id] || '—') : '—',
+      })));
+    }
   }, [userInfo]);
 
   const refresh = useCallback(async () => {
@@ -70,6 +92,22 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     return { data, error };
   };
 
+  const editProduto = async (id: string, nome: string, descricao: string, estoque_minimo: number) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    const { error } = await supabase.from('produtos')
+      .update({ nome, descricao: descricao || null, estoque_minimo } as any)
+      .eq('id', id);
+    if (!error) await fetchProdutos();
+    return { error };
+  };
+
+  const deleteProduto = async (id: string) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    const { error } = await supabase.from('produtos').delete().eq('id', id);
+    if (!error) await fetchProdutos();
+    return { error };
+  };
+
   const addEntrada = async (produto_id: string, quantidade: number) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
 
@@ -79,6 +117,7 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
       tipo: 'entrada',
       quantidade,
       origem: 'manual',
+      usuario_id: userInfo.userId,
     } as any);
     if (movErr) return { error: movErr };
 
@@ -109,6 +148,7 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
       tipo: 'saida',
       quantidade,
       origem: 'manual',
+      usuario_id: userInfo.userId,
     } as any);
     if (movErr) return { error: movErr };
 
@@ -133,6 +173,7 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
       quantidade,
       origem: 'pedido',
       pedido_id,
+      usuario_id: userInfo.userId,
     } as any);
     if (movErr) return { error: movErr };
 
@@ -156,6 +197,8 @@ export function useEstoque(userInfo: AuthUserInfo | null) {
     loading,
     produtosEstoqueBaixo,
     addProduto,
+    editProduto,
+    deleteProduto,
     addEntrada,
     addSaida,
     registrarSaidaPedido,
