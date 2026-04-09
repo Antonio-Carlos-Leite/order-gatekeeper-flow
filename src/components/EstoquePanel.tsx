@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle, Search, Edit, Trash2, Download, BarChart3, TrendingDown, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 import type { Produto, Movimentacao } from '@/hooks/useEstoque';
 
 interface EstoquePanelProps {
@@ -15,12 +17,15 @@ interface EstoquePanelProps {
   movimentacoes: Movimentacao[];
   produtosEstoqueBaixo: Produto[];
   onAddProduto: (nome: string, descricao: string, estoque_minimo: number) => Promise<{ error: any }>;
+  onEditProduto?: (id: string, nome: string, descricao: string, estoque_minimo: number) => Promise<{ error: any }>;
+  onDeleteProduto?: (id: string) => Promise<{ error: any }>;
   onAddEntrada: (produto_id: string, quantidade: number) => Promise<{ error: any }>;
   onAddSaida: (produto_id: string, quantidade: number) => Promise<{ error: any }>;
   onBack: () => void;
+  userType?: string;
 }
 
-const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onAddEntrada, onAddSaida }: EstoquePanelProps) => {
+const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProduto, onEditProduto, onDeleteProduto, onAddEntrada, onAddSaida, userType }: EstoquePanelProps) => {
   const [nomeProduto, setNomeProduto] = useState('');
   const [descProduto, setDescProduto] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
@@ -28,7 +33,26 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
   const [entradaQtd, setEntradaQtd] = useState('');
   const [saidaProdutoId, setSaidaProdutoId] = useState('');
   const [saidaQtd, setSaidaQtd] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingProduct, setEditingProduct] = useState<Produto | null>(null);
+  const [editNome, setEditNome] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editMinimo, setEditMinimo] = useState('');
   const { toast } = useToast();
+
+  const isDiretor = userType === 'diretor';
+
+  // Summary stats
+  const today = new Date().toISOString().split('T')[0];
+  const entradasHoje = movimentacoes.filter(m => m.tipo === 'entrada' && m.created_at.startsWith(today));
+  const saidasHoje = movimentacoes.filter(m => m.tipo === 'saida' && m.created_at.startsWith(today));
+  const totalEntradasHoje = entradasHoje.reduce((sum, m) => sum + m.quantidade, 0);
+  const totalSaidasHoje = saidasHoje.reduce((sum, m) => sum + m.quantidade, 0);
+
+  const filteredProdutos = useMemo(() =>
+    produtos.filter(p => p.nome.toLowerCase().includes(searchTerm.toLowerCase())),
+    [produtos, searchTerm]
+  );
 
   const handleAddProduto = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +94,142 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
     }
   };
 
+  const handleEditProduct = async () => {
+    if (!editingProduct || !onEditProduto) return;
+    const { error } = await onEditProduto(editingProduct.id, editNome, editDesc, parseInt(editMinimo) || 5);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Produto atualizado!" });
+      setEditingProduct(null);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string, nome: string) => {
+    if (!onDeleteProduto) return;
+    const { error } = await onDeleteProduto(id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Produto removido!", description: `${nome} foi removido do estoque.` });
+    }
+  };
+
+  const openEditDialog = (p: Produto) => {
+    setEditingProduct(p);
+    setEditNome(p.nome);
+    setEditDesc(p.descricao || '');
+    setEditMinimo(String(p.estoque_minimo));
+  };
+
   const getProdutoNome = (id: string) => produtos.find(p => p.id === id)?.nome || '—';
+
+  // Backup functions
+  const exportBackupJSON = () => {
+    const data = { produtos, movimentacoes, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-estoque-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportBackupCSV = () => {
+    // Produtos CSV
+    const prodHeaders = 'Nome,Descrição,Estoque,Mínimo,Status\n';
+    const prodRows = produtos.map(p => `"${p.nome}","${p.descricao || ''}",${p.quantidade_estoque},${p.estoque_minimo},${p.quantidade_estoque <= p.estoque_minimo ? 'Baixo' : 'OK'}`).join('\n');
+    const blob = new Blob([prodHeaders + prodRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-estoque-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportBackupExcel = () => {
+    const prodData = [
+      ['Nome', 'Descrição', 'Estoque', 'Mínimo', 'Status'],
+      ...produtos.map(p => [p.nome, p.descricao || '', p.quantidade_estoque, p.estoque_minimo, p.quantidade_estoque <= p.estoque_minimo ? 'Baixo' : 'OK']),
+    ];
+    const movData = [
+      ['Data', 'Produto', 'Tipo', 'Quantidade', 'Origem', 'Usuário'],
+      ...movimentacoes.map(m => [
+        new Date(m.created_at).toLocaleString('pt-BR'),
+        getProdutoNome(m.produto_id),
+        m.tipo === 'entrada' ? 'Entrada' : 'Saída',
+        m.quantidade,
+        m.origem,
+        m.usuario_nome || '—',
+      ]),
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet(prodData);
+    ws1['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Produtos');
+    const ws2 = XLSX.utils.aoa_to_sheet(movData);
+    ws2['!cols'] = [{ wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Movimentações');
+    XLSX.writeFile(wb, `backup-estoque-${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   return (
     <div>
       <div className="max-w-6xl mx-auto">
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="shadow-md border-0 bg-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100">
+                <Package className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Produtos</p>
+                <p className="text-2xl font-bold">{produtos.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-md border-0 bg-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-green-100">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Entradas Hoje</p>
+                <p className="text-2xl font-bold">{totalEntradasHoje}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-md border-0 bg-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-100">
+                <TrendingDown className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Saídas Hoje</p>
+                <p className="text-2xl font-bold">{totalSaidasHoje}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-md border-0 bg-card">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-orange-100">
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Estoque Baixo</p>
+                <p className="text-2xl font-bold text-red-600">{produtosEstoqueBaixo.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Alertas de estoque baixo */}
         {produtosEstoqueBaixo.length > 0 && (
@@ -198,14 +353,27 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
         {/* Tabela de produtos */}
         <Card className="shadow-lg border-0 bg-card mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Produtos em Estoque
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Produtos em Estoque
+              </CardTitle>
+              <div className="relative w-full max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar produto..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {produtos.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Nenhum produto cadastrado</p>
+            {filteredProdutos.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                {searchTerm ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
+              </p>
             ) : (
               <Table>
                 <TableHeader>
@@ -215,10 +383,11 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
                     <TableHead className="text-center">Estoque</TableHead>
                     <TableHead className="text-center">Mínimo</TableHead>
                     <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {produtos.map(p => (
+                  {filteredProdutos.map(p => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.nome}</TableCell>
                       <TableCell className="text-muted-foreground">{p.descricao || '—'}</TableCell>
@@ -228,11 +397,21 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
                         {p.quantidade_estoque <= p.estoque_minimo ? (
                           <Badge className="bg-red-100 text-red-800">
                             <AlertTriangle className="w-3 h-3 mr-1" />
-                            Baixo
+                            Estoque Baixo
                           </Badge>
                         ) : (
                           <Badge className="bg-green-100 text-green-800">OK</Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openEditDialog(p)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDeleteProduct(p.id, p.nome)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -242,10 +421,42 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
           </CardContent>
         </Card>
 
+        {/* Edit Dialog */}
+        {editingProduct && (
+          <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar Produto</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nome</Label>
+                  <Input value={editNome} onChange={e => setEditNome(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição</Label>
+                  <Input value={editDesc} onChange={e => setEditDesc(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Estoque Mínimo</Label>
+                  <Input type="number" min="0" value={editMinimo} onChange={e => setEditMinimo(e.target.value)} />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setEditingProduct(null)}>Cancelar</Button>
+                  <Button onClick={handleEditProduct}>Salvar</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
         {/* Movimentações recentes */}
-        <Card className="shadow-lg border-0 bg-card">
+        <Card className="shadow-lg border-0 bg-card mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Movimentações Recentes</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Movimentações Recentes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {movimentacoes.length === 0 ? (
@@ -259,6 +470,7 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
                     <TableHead className="text-center">Tipo</TableHead>
                     <TableHead className="text-center">Qtd</TableHead>
                     <TableHead>Origem</TableHead>
+                    <TableHead>Usuário</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -275,6 +487,7 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
                       </TableCell>
                       <TableCell className="text-center font-bold">{m.quantidade}</TableCell>
                       <TableCell className="capitalize">{m.origem}</TableCell>
+                      <TableCell>{m.usuario_nome || '—'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -282,6 +495,34 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
             )}
           </CardContent>
         </Card>
+
+        {/* Backup - apenas diretores */}
+        {isDiretor && (
+          <Card className="shadow-lg border-0 bg-card">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Backup do Estoque
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" onClick={exportBackupJSON} className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Exportar JSON
+                </Button>
+                <Button variant="outline" onClick={exportBackupCSV} className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Exportar CSV
+                </Button>
+                <Button variant="outline" onClick={exportBackupExcel} className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Exportar Excel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

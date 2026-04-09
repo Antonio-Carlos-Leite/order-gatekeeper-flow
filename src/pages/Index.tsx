@@ -62,11 +62,9 @@ const Index = () => {
     const dbStatus = status === 'approved' ? 'aprovado' : 'rejeitado';
     const { error } = await approvePedido(orderId, dbStatus as 'aprovado' | 'rejeitado', comments);
     
-    // Auto stock deduction on approval
     if (!error && status === 'approved') {
       const pedido = pedidos.find(p => p.id === orderId);
       if (pedido?.tipo_lampada) {
-        // Find matching product by name
         const produto = estoque.produtos.find(p => 
           p.nome.toLowerCase() === pedido.tipo_lampada.toLowerCase()
         );
@@ -110,7 +108,6 @@ const Index = () => {
   const legacyProcessed = processedOrders.map(mapPedidoToLegacy);
   const legacyAll = pedidos.map(mapPedidoToLegacy);
 
-  // Default page based on role
   const defaultPage = (): Page => {
     if (userInfo.userType === 'diretor') return 'approval';
     if (userInfo.userType === 'estoque') return 'estoque';
@@ -177,9 +174,12 @@ const Index = () => {
             movimentacoes={estoque.movimentacoes}
             produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
             onAddProduto={estoque.addProduto}
+            onEditProduto={estoque.editProduto}
+            onDeleteProduto={estoque.deleteProduto}
             onAddEntrada={estoque.addEntrada}
             onAddSaida={estoque.addSaida}
             onBack={() => setCurrentPage(defaultPage())}
+            userType={userInfo.userType}
           />
         )}
       </main>

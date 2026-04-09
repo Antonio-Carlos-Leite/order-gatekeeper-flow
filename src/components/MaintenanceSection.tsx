@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, User, Lock, Shield, UserPlus, Users, Crown, MapPin, X } from 'lucide-react';
+import { Settings, User, Lock, Shield, UserPlus, Users, Crown, MapPin, X, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,7 +42,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserType, setNewUserType] = useState<'funcionario' | 'diretor'>('funcionario');
+  const [newUserType, setNewUserType] = useState<'funcionario' | 'diretor' | 'estoque'>('funcionario');
   const [newUserEmpresaId, setNewUserEmpresaId] = useState('');
 
   // Form de cadastro de código de acesso
@@ -255,9 +255,10 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                   </div>
                   <div className="space-y-2">
                     <Label>Tipo de Usuário</Label>
-                    <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor')} className="flex gap-4 pt-2">
+                    <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor' | 'estoque')} className="flex gap-4 pt-2 flex-wrap">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="funcionario" id="new-func" /><Label htmlFor="new-func" className="flex items-center gap-1 cursor-pointer"><Users className="w-4 h-4" /> Funcionário</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="diretor" id="new-dir" /><Label htmlFor="new-dir" className="flex items-center gap-1 cursor-pointer"><Crown className="w-4 h-4" /> Diretor</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="estoque" id="new-est" /><Label htmlFor="new-est" className="flex items-center gap-1 cursor-pointer"><Package className="w-4 h-4" /> Estoquista</Label></div>
                     </RadioGroup>
                   </div>
                 </div>
@@ -279,7 +280,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                         <TableCell><Badge variant="outline" className="flex items-center gap-1 w-fit"><MapPin className="w-3 h-3" />{getEmpresaNome(user.empresa_id)}</Badge></TableCell>
                         <TableCell>{user.display_name}</TableCell>
                         <TableCell>{user.username}</TableCell>
-                        <TableCell><Badge className={role === 'diretor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>{role === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}</Badge></TableCell>
+                        <TableCell><Badge className={role === 'diretor' ? 'bg-purple-100 text-purple-800' : role === 'estoque' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>{role === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : role === 'estoque' ? <><Package className="w-3 h-3 mr-1" />Estoquista</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}</Badge></TableCell>
                       </TableRow>
                     );
                   })}
