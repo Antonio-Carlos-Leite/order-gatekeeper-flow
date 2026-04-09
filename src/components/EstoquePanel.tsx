@@ -10,6 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Package, Plus, ArrowDown, ArrowUp, AlertTriangle, Search, Edit, Trash2, Download, BarChart3, TrendingDown, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import type { Produto, Movimentacao } from '@/hooks/useEstoque';
 
 interface EstoquePanelProps {
@@ -124,41 +127,93 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
 
   const getProdutoNome = (id: string) => produtos.find(p => p.id === id)?.nome || '—';
 
+  // Chart data: movimentações dos últimos 6 meses
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const months: { key: string; label: string; entradas: number; saidas: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      months.push({ key, label, entradas: 0, saidas: 0 });
+    }
+    movimentacoes.forEach(m => {
+      const mKey = m.created_at.substring(0, 7);
+      const month = months.find(mo => mo.key === mKey);
+      if (month) {
+        if (m.tipo === 'entrada') month.entradas += m.quantidade;
+        else month.saidas += m.quantidade;
+      }
+    });
+    return months;
+  }, [movimentacoes]);
+
   // Backup functions
-  const exportBackupJSON = () => {
-    const data = { produtos, movimentacoes, exportedAt: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup-estoque-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const exportEstoquePDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Estoque', 105, 15, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 24);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [['Produto', 'Descrição', 'Estoque', 'Mínimo', 'Status']],
+      body: produtos.map(p => [
+        p.nome,
+        p.descricao || '—',
+        p.quantidade_estoque,
+        p.estoque_minimo,
+        p.quantidade_estoque <= p.estoque_minimo ? 'Baixo' : 'OK',
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [37, 99, 235] },
+    });
+    doc.save('estoque.pdf');
   };
 
-  const exportBackupCSV = () => {
-    // Produtos CSV
-    const prodHeaders = 'Nome,Descrição,Estoque,Mínimo,Status\n';
-    const prodRows = produtos.map(p => `"${p.nome}","${p.descricao || ''}",${p.quantidade_estoque},${p.estoque_minimo},${p.quantidade_estoque <= p.estoque_minimo ? 'Baixo' : 'OK'}`).join('\n');
-    const blob = new Blob([prodHeaders + prodRows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup-estoque-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const exportMovimentacoesPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Movimentações de Estoque', 105, 15, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 24);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [['Data', 'Produto', 'Tipo', 'Quantidade', 'Origem', 'Usuário']],
+      body: movimentacoes.map(m => [
+        new Date(m.created_at).toLocaleString('pt-BR'),
+        getProdutoNome(m.produto_id),
+        m.tipo === 'entrada' ? 'Entrada' : 'Saída',
+        m.quantidade,
+        m.origem,
+        m.usuario_nome || '—',
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [37, 99, 235] },
+    });
+    doc.save('movimentacoes_estoque.pdf');
   };
 
-  const exportBackupExcel = () => {
-    const prodData = [
-      ['Nome', 'Descrição', 'Estoque', 'Mínimo', 'Status'],
+  const exportEstoqueExcel = () => {
+    const wsData = [
+      ['Produto', 'Descrição', 'Estoque', 'Mínimo', 'Status'],
       ...produtos.map(p => [p.nome, p.descricao || '', p.quantidade_estoque, p.estoque_minimo, p.quantidade_estoque <= p.estoque_minimo ? 'Baixo' : 'OK']),
     ];
-    const movData = [
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Estoque');
+    XLSX.writeFile(wb, 'estoque.xlsx');
+  };
+
+  const exportMovimentacoesExcel = () => {
+    const wsData = [
       ['Data', 'Produto', 'Tipo', 'Quantidade', 'Origem', 'Usuário'],
       ...movimentacoes.map(m => [
         new Date(m.created_at).toLocaleString('pt-BR'),
@@ -170,13 +225,10 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
       ]),
     ];
     const wb = XLSX.utils.book_new();
-    const ws1 = XLSX.utils.aoa_to_sheet(prodData);
-    ws1['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, ws1, 'Produtos');
-    const ws2 = XLSX.utils.aoa_to_sheet(movData);
-    ws2['!cols'] = [{ wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }];
-    XLSX.utils.book_append_sheet(wb, ws2, 'Movimentações');
-    XLSX.writeFile(wb, `backup-estoque-${new Date().toISOString().split('T')[0]}.xlsx`);
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{ wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Movimentações');
+    XLSX.writeFile(wb, 'movimentacoes_estoque.xlsx');
   };
 
   return (
@@ -496,29 +548,66 @@ const EstoquePanel = ({ produtos, movimentacoes, produtosEstoqueBaixo, onAddProd
           </CardContent>
         </Card>
 
-        {/* Backup - apenas diretores */}
+        {/* Gráfico de Movimentações */}
+        <Card className="shadow-lg border-0 bg-card mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Movimentações por Mês
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {chartData.every(d => d.entradas === 0 && d.saidas === 0) ? (
+              <p className="text-center text-muted-foreground py-8">Sem dados de movimentação para exibir</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="entradas" name="Entradas" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="saidas" name="Saídas" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gerar Backup - apenas diretores */}
         {isDiretor && (
           <Card className="shadow-lg border-0 bg-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                Backup do Estoque
+                Gerar Backup
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="outline" onClick={exportBackupJSON} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar JSON
-                </Button>
-                <Button variant="outline" onClick={exportBackupCSV} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar CSV
-                </Button>
-                <Button variant="outline" onClick={exportBackupExcel} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Exportar Excel
-                </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm">Estoque (Produtos)</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={exportEstoquePDF} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> estoque.pdf
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={exportEstoqueExcel} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> estoque.xlsx
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm">Movimentações</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={exportMovimentacoesPDF} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> movimentacoes_estoque.pdf
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={exportMovimentacoesExcel} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" /> movimentacoes_estoque.xlsx
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
