@@ -280,7 +280,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                         <TableCell><Badge variant="outline" className="flex items-center gap-1 w-fit"><MapPin className="w-3 h-3" />{getEmpresaNome(user.empresa_id)}</Badge></TableCell>
                         <TableCell>{user.display_name}</TableCell>
                         <TableCell>{user.username}</TableCell>
-                        <TableCell><Badge className={role === 'diretor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>{role === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}</Badge></TableCell>
+                        <TableCell><Badge className={role === 'diretor' ? 'bg-purple-100 text-purple-800' : role === 'estoque' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>{role === 'diretor' ? <><Crown className="w-3 h-3 mr-1" />Diretor</> : role === 'estoque' ? <><Package className="w-3 h-3 mr-1" />Estoquista</> : <><Users className="w-3 h-3 mr-1" />Funcionário</>}</Badge></TableCell>
                       </TableRow>
                     );
                   })}
