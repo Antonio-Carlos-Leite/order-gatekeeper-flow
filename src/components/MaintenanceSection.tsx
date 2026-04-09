@@ -255,9 +255,10 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                   </div>
                   <div className="space-y-2">
                     <Label>Tipo de Usuário</Label>
-                    <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor')} className="flex gap-4 pt-2">
+                    <RadioGroup value={newUserType} onValueChange={(v) => setNewUserType(v as 'funcionario' | 'diretor' | 'estoque')} className="flex gap-4 pt-2 flex-wrap">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="funcionario" id="new-func" /><Label htmlFor="new-func" className="flex items-center gap-1 cursor-pointer"><Users className="w-4 h-4" /> Funcionário</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="diretor" id="new-dir" /><Label htmlFor="new-dir" className="flex items-center gap-1 cursor-pointer"><Crown className="w-4 h-4" /> Diretor</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="estoque" id="new-est" /><Label htmlFor="new-est" className="flex items-center gap-1 cursor-pointer"><Package className="w-4 h-4" /> Estoquista</Label></div>
                     </RadioGroup>
                   </div>
                 </div>
