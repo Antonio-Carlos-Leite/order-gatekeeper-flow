@@ -42,7 +42,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserType, setNewUserType] = useState<'funcionario' | 'diretor'>('funcionario');
+  const [newUserType, setNewUserType] = useState<'funcionario' | 'diretor' | 'estoque'>('funcionario');
   const [newUserEmpresaId, setNewUserEmpresaId] = useState('');
 
   // Form de cadastro de código de acesso
