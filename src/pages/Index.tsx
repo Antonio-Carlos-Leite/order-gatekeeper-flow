@@ -10,13 +10,14 @@ import DirectorApproval from '@/components/DirectorApproval';
 import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
 import OrdemServicoForm from '@/components/OrdemServicoForm';
+import OrdemServicoList from '@/components/OrdemServicoList';
 import MaintenanceSection from '@/components/MaintenanceSection';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list';
 
 const Index = () => {
   const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
-  const { pedidos, pendingOrders, processedOrders, createPedido, createOrdemServico, approvePedido } = usePedidos(userInfo);
+  const { pedidos, pendingOrders, processedOrders, ordensServico, createPedido, createOrdemServico, approvePedido, updatePedidoStatus } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
 
@@ -54,8 +55,9 @@ const Index = () => {
   };
 
   const handleOrdemServicoSubmit = async (data: any) => {
-    const { error } = await createOrdemServico(data);
-    if (error) throw error;
+    const result = await createOrdemServico(data);
+    if (result.error) throw result.error;
+    return result;
   };
 
   const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
@@ -155,7 +157,16 @@ const Index = () => {
         )}
 
         {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
-          <OrdemServicoForm onSubmit={handleOrdemServicoSubmit} />
+          <OrdemServicoForm onSubmit={handleOrdemServicoSubmit} municipio={userInfo.municipio} />
+        )}
+
+        {activePage === 'os-list' && userInfo.userType === 'diretor' && (
+          <OrdemServicoList
+            orders={ordensServico}
+            municipio={userInfo.municipio}
+            userType={userInfo.userType}
+            onUpdateStatus={updatePedidoStatus}
+          />
         )}
 
         {activePage === 'approved' && (

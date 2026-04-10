@@ -89,6 +89,16 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
     return { data, error };
   };
 
+  const updatePedidoStatus = async (pedidoId: string, status: string) => {
+    if (!userInfo) return { error: new Error('Not authenticated') };
+    const { data, error } = await supabase.from('pedidos').update({
+      status: status as any,
+      updated_at: new Date().toISOString(),
+    }).eq('id', pedidoId).select().single();
+    if (!error) await fetchPedidos();
+    return { data, error };
+  };
+
   const approvePedido = async (pedidoId: string, status: 'aprovado' | 'rejeitado', comments?: string) => {
     if (!userInfo) return { error: new Error('Not authenticated') };
 
@@ -109,5 +119,7 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
   const pendingOrders = pedidos.filter(p => p.status === 'aguardando_aprovacao');
   const processedOrders = pedidos.filter(p => p.status === 'aprovado' || p.status === 'rejeitado');
 
-  return { pedidos, pendingOrders, processedOrders, loading, createPedido, createOrdemServico, approvePedido, refetch: fetchPedidos };
+  const ordensServico = pedidos.filter(p => p.tipo === 'ordem_servico');
+
+  return { pedidos, pendingOrders, processedOrders, ordensServico, loading, createPedido, createOrdemServico, approvePedido, updatePedidoStatus, refetch: fetchPedidos };
 }
