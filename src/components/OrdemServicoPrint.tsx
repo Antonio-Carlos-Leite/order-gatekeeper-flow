@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 interface OrdemServicoPrintProps {
   order: any;

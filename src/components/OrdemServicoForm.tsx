@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Send, Wrench, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import OrdemServicoPrint from './OrdemServicoPrint';
 
 interface OrdemServicoFormProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any) => Promise<any>;
+  municipio?: string;
 }
 
-const OrdemServicoForm = ({ onSubmit }: OrdemServicoFormProps) => {
+const OrdemServicoForm = ({ onSubmit, municipio = '' }: OrdemServicoFormProps) => {
   const [formData, setFormData] = useState({
     produto: '',
     codigoDoPoste: '',
@@ -27,6 +29,7 @@ const OrdemServicoForm = ({ onSubmit }: OrdemServicoFormProps) => {
     observações: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<any>(null);
   const { toast } = useToast();
 
   const handleInputChange = (field: string, value: string) => {
@@ -48,11 +51,14 @@ const OrdemServicoForm = ({ onSubmit }: OrdemServicoFormProps) => {
     setIsSubmitting(true);
     
     try {
-      await onSubmit(formData);
+      const result = await onSubmit(formData);
       toast({
         title: "Ordem de Serviço criada!",
-        description: "A O.S. foi criada com status aprovado.",
+        description: "A O.S. foi criada com sucesso.",
       });
+      if (result?.data) {
+        setCreatedOrder(result.data);
+      }
       setFormData({
         produto: '', codigoDoPoste: '', solicitante: '', cpf: '',
         Rua: '', Bairro: '', localização: '', DatadaSolicitação: '',
@@ -68,6 +74,17 @@ const OrdemServicoForm = ({ onSubmit }: OrdemServicoFormProps) => {
       setIsSubmitting(false);
     }
   };
+
+  if (createdOrder) {
+    return (
+      <div className="space-y-4">
+        <OrdemServicoPrint order={createdOrder} municipio={municipio} onClose={() => setCreatedOrder(null)} />
+        <div className="text-center">
+          <Button variant="outline" onClick={() => setCreatedOrder(null)}>Criar Nova O.S.</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
