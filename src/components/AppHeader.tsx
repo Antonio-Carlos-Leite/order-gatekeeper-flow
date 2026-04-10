@@ -58,6 +58,7 @@ const AppHeader = ({ userInfo, currentPage, onNavigate, onLogout, pendingCount =
               <NavButton active={currentPage === 'approved'} onClick={() => onNavigate('approved')} icon={<CheckCircle className="w-4 h-4" />} label="Processados" />
               <NavButton active={currentPage === 'ordem-servico'} onClick={() => onNavigate('ordem-servico')} icon={<Wrench className="w-4 h-4" />} label="Nova O.S." />
               <NavButton active={currentPage === 'os-list'} onClick={() => onNavigate('os-list')} icon={<ClipboardList className="w-4 h-4" />} label="Ordens de Serviço" />
+              <NavButton active={currentPage === 'estoque'} onClick={() => onNavigate('estoque')} icon={<Package className="w-4 h-4" />} label="Estoque" badge={lowStockCount > 0 ? lowStockCount : undefined} badgeVariant="destructive" />
             </>
           )}
           {isEstoque && (
