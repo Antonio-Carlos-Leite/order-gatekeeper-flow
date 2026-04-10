@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LogOut, FileText, CheckCircle, ClipboardList, Package, PlusCircle, Wrench } from 'lucide-react';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list';
 
 interface AppHeaderProps {
   userInfo: {
@@ -56,8 +56,8 @@ const AppHeader = ({ userInfo, currentPage, onNavigate, onLogout, pendingCount =
             <>
               <NavButton active={currentPage === 'approval'} onClick={() => onNavigate('approval')} icon={<FileText className="w-4 h-4" />} label="Pendentes" badge={pendingCount > 0 ? pendingCount : undefined} />
               <NavButton active={currentPage === 'approved'} onClick={() => onNavigate('approved')} icon={<CheckCircle className="w-4 h-4" />} label="Processados" />
-              <NavButton active={currentPage === 'ordem-servico'} onClick={() => onNavigate('ordem-servico')} icon={<Wrench className="w-4 h-4" />} label="Ordem de Serviço" />
-              <NavButton active={currentPage === 'estoque'} onClick={() => onNavigate('estoque')} icon={<Package className="w-4 h-4" />} label="Estoque" badge={lowStockCount > 0 ? lowStockCount : undefined} badgeVariant="destructive" />
+              <NavButton active={currentPage === 'ordem-servico'} onClick={() => onNavigate('ordem-servico')} icon={<Wrench className="w-4 h-4" />} label="Nova O.S." />
+              <NavButton active={currentPage === 'os-list'} onClick={() => onNavigate('os-list')} icon={<ClipboardList className="w-4 h-4" />} label="Ordens de Serviço" />
             </>
           )}
           {isEstoque && (

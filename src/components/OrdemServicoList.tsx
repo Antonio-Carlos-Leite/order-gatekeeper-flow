@@ -13,7 +13,7 @@ interface OrdemServicoListProps {
   orders: any[];
   municipio: string;
   userType: string;
-  onUpdateStatus?: (orderId: string, status: string) => Promise<void>;
+  onUpdateStatus?: (orderId: string, status: string) => Promise<any>;
 }
 
 const OrdemServicoList = ({ orders, municipio, userType, onUpdateStatus }: OrdemServicoListProps) => {
