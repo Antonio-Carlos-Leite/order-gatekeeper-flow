@@ -157,14 +157,19 @@ const Index = () => {
         )}
 
         {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
-          <OrdemServicoForm onSubmit={handleOrdemServicoSubmit} municipio={userInfo.municipio} />
+          <OrdemServicoForm
+            onSubmit={handleOrdemServicoSubmit}
+            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
+            responsavel={userInfo.displayName}
+          />
         )}
 
         {activePage === 'os-list' && userInfo.userType === 'diretor' && (
           <OrdemServicoList
             orders={ordensServico}
-            municipio={userInfo.municipio}
+            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
             userType={userInfo.userType}
+            responsavel={userInfo.displayName}
             onUpdateStatus={updatePedidoStatus}
           />
         )}
