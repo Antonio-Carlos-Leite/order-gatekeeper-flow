@@ -285,6 +285,7 @@ export type Database = {
         | "aguardando_aprovacao"
         | "aprovado"
         | "rejeitado"
+        | "executado"
       order_type: "pedido" | "ordem_servico"
     }
     CompositeTypes: {
@@ -419,6 +420,7 @@ export const Constants = {
         "aguardando_aprovacao",
         "aprovado",
         "rejeitado",
+        "executado",
       ],
       order_type: ["pedido", "ordem_servico"],
     },
