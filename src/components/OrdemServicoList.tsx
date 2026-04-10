@@ -7,16 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Search, Eye, FileText, ClipboardCheck, Clock, CheckCircle, XCircle } from 'lucide-react';
-import OrdemServicoPrint from './OrdemServicoPrint';
+import OrdemServicoPrint, { type EmpresaInfo } from './OrdemServicoPrint';
 
 interface OrdemServicoListProps {
   orders: any[];
-  municipio: string;
+  empresa: EmpresaInfo;
   userType: string;
+  responsavel?: string;
   onUpdateStatus?: (orderId: string, status: string) => Promise<any>;
 }
 
-const OrdemServicoList = ({ orders, municipio, userType, onUpdateStatus }: OrdemServicoListProps) => {
+const OrdemServicoList = ({ orders, empresa, userType, responsavel, onUpdateStatus }: OrdemServicoListProps) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -145,7 +146,7 @@ const OrdemServicoList = ({ orders, municipio, userType, onUpdateStatus }: Ordem
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogTitle className="sr-only">Ordem de Serviço</DialogTitle>
           {selectedOrder && (
-            <OrdemServicoPrint order={selectedOrder} municipio={municipio} onClose={() => setSelectedOrder(null)} />
+            <OrdemServicoPrint order={selectedOrder} empresa={empresa} responsavel={responsavel} onClose={() => setSelectedOrder(null)} />
           )}
         </DialogContent>
       </Dialog>

@@ -7,14 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Send, Wrench, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import OrdemServicoPrint from './OrdemServicoPrint';
+import OrdemServicoPrint, { type EmpresaInfo } from './OrdemServicoPrint';
 
 interface OrdemServicoFormProps {
   onSubmit: (data: any) => Promise<any>;
-  municipio?: string;
+  empresa?: EmpresaInfo;
+  responsavel?: string;
 }
 
-const OrdemServicoForm = ({ onSubmit, municipio = '' }: OrdemServicoFormProps) => {
+const OrdemServicoForm = ({ onSubmit, empresa, responsavel }: OrdemServicoFormProps) => {
   const [formData, setFormData] = useState({
     produto: '',
     codigoDoPoste: '',
@@ -78,7 +79,7 @@ const OrdemServicoForm = ({ onSubmit, municipio = '' }: OrdemServicoFormProps) =
   if (createdOrder) {
     return (
       <div className="space-y-4">
-        <OrdemServicoPrint order={createdOrder} municipio={municipio} onClose={() => setCreatedOrder(null)} />
+        <OrdemServicoPrint order={createdOrder} empresa={empresa || { nome: '', municipio: '', codigoAcesso: '' }} responsavel={responsavel} onClose={() => setCreatedOrder(null)} />
         <div className="text-center">
           <Button variant="outline" onClick={() => setCreatedOrder(null)}>Criar Nova O.S.</Button>
         </div>
