@@ -160,7 +160,17 @@ const Index = () => {
         {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
           <OrdemServicoForm
             onSubmit={handleOrdemServicoSubmit}
-            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
+            empresa={{
+              nome: userInfo.municipio,
+              municipio: userInfo.municipio,
+              codigoAcesso: userInfo.codigoAcesso,
+              cidade: userInfo.cidade,
+              estado: userInfo.estado,
+              logoUrl: userInfo.logoUrl,
+              assinaturaUrl: userInfo.assinaturaUrl,
+              responsavelNome: userInfo.responsavelNome,
+              responsavelCargo: userInfo.responsavelCargo,
+            }}
             responsavel={userInfo.displayName}
           />
         )}
@@ -168,11 +178,25 @@ const Index = () => {
         {activePage === 'os-list' && userInfo.userType === 'diretor' && (
           <OrdemServicoList
             orders={ordensServico}
-            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
+            empresa={{
+              nome: userInfo.municipio,
+              municipio: userInfo.municipio,
+              codigoAcesso: userInfo.codigoAcesso,
+              cidade: userInfo.cidade,
+              estado: userInfo.estado,
+              logoUrl: userInfo.logoUrl,
+              assinaturaUrl: userInfo.assinaturaUrl,
+              responsavelNome: userInfo.responsavelNome,
+              responsavelCargo: userInfo.responsavelCargo,
+            }}
             userType={userInfo.userType}
             responsavel={userInfo.displayName}
             onUpdateStatus={updatePedidoStatus}
           />
+        )}
+
+        {activePage === 'empresa-config' && userInfo.userType === 'diretor' && (
+          <EmpresaConfig userInfo={userInfo} />
         )}
 
         {activePage === 'approved' && (
