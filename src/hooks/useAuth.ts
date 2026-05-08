@@ -11,6 +11,12 @@ export interface AuthUserInfo {
   empresaId: string;
   codigoAcesso: string;
   municipio: string;
+  cidade: string;
+  estado: string;
+  logoUrl: string;
+  assinaturaUrl: string;
+  responsavelNome: string;
+  responsavelCargo: string;
 }
 
 // Shared across all hook instances
@@ -78,7 +84,7 @@ export function useAuth() {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*, empresas:empresa_id(codigo_acesso, nome)')
+        .select('*, empresas:empresa_id(codigo_acesso, nome, cidade, estado, logo_url, assinatura_url, responsavel_nome, responsavel_cargo)')
         .eq('user_id', user.id)
         .single();
 
@@ -99,6 +105,12 @@ export function useAuth() {
           empresaId: profile.empresa_id,
           codigoAcesso: empresa?.codigo_acesso || '',
           municipio: empresa?.nome || '',
+          cidade: empresa?.cidade || '',
+          estado: empresa?.estado || '',
+          logoUrl: empresa?.logo_url || '',
+          assinaturaUrl: empresa?.assinatura_url || '',
+          responsavelNome: empresa?.responsavel_nome || '',
+          responsavelCargo: empresa?.responsavel_cargo || '',
         });
       }
     } catch (error) {
