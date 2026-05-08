@@ -16,22 +16,40 @@ export type Database = {
     Tables: {
       empresas: {
         Row: {
+          assinatura_url: string | null
+          cidade: string | null
           codigo_acesso: string
           created_at: string
+          estado: string | null
           id: string
+          logo_url: string | null
           nome: string
+          responsavel_cargo: string | null
+          responsavel_nome: string | null
         }
         Insert: {
+          assinatura_url?: string | null
+          cidade?: string | null
           codigo_acesso: string
           created_at?: string
+          estado?: string | null
           id?: string
+          logo_url?: string | null
           nome: string
+          responsavel_cargo?: string | null
+          responsavel_nome?: string | null
         }
         Update: {
+          assinatura_url?: string | null
+          cidade?: string | null
           codigo_acesso?: string
           created_at?: string
+          estado?: string | null
           id?: string
+          logo_url?: string | null
           nome?: string
+          responsavel_cargo?: string | null
+          responsavel_nome?: string | null
         }
         Relationships: []
       }

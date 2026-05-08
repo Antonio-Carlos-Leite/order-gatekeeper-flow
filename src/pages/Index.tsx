@@ -11,9 +11,10 @@ import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
 import OrdemServicoForm from '@/components/OrdemServicoForm';
 import OrdemServicoList from '@/components/OrdemServicoList';
+import EmpresaConfig from '@/components/EmpresaConfig';
 import MaintenanceSection from '@/components/MaintenanceSection';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list' | 'empresa-config';
 
 const Index = () => {
   const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
@@ -159,7 +160,17 @@ const Index = () => {
         {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
           <OrdemServicoForm
             onSubmit={handleOrdemServicoSubmit}
-            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
+            empresa={{
+              nome: userInfo.municipio,
+              municipio: userInfo.municipio,
+              codigoAcesso: userInfo.codigoAcesso,
+              cidade: userInfo.cidade,
+              estado: userInfo.estado,
+              logoUrl: userInfo.logoUrl,
+              assinaturaUrl: userInfo.assinaturaUrl,
+              responsavelNome: userInfo.responsavelNome,
+              responsavelCargo: userInfo.responsavelCargo,
+            }}
             responsavel={userInfo.displayName}
           />
         )}
@@ -167,11 +178,25 @@ const Index = () => {
         {activePage === 'os-list' && userInfo.userType === 'diretor' && (
           <OrdemServicoList
             orders={ordensServico}
-            empresa={{ nome: userInfo.municipio, municipio: userInfo.municipio, codigoAcesso: userInfo.codigoAcesso }}
+            empresa={{
+              nome: userInfo.municipio,
+              municipio: userInfo.municipio,
+              codigoAcesso: userInfo.codigoAcesso,
+              cidade: userInfo.cidade,
+              estado: userInfo.estado,
+              logoUrl: userInfo.logoUrl,
+              assinaturaUrl: userInfo.assinaturaUrl,
+              responsavelNome: userInfo.responsavelNome,
+              responsavelCargo: userInfo.responsavelCargo,
+            }}
             userType={userInfo.userType}
             responsavel={userInfo.displayName}
             onUpdateStatus={updatePedidoStatus}
           />
+        )}
+
+        {activePage === 'empresa-config' && userInfo.userType === 'diretor' && (
+          <EmpresaConfig userInfo={userInfo} />
         )}
 
         {activePage === 'approved' && (

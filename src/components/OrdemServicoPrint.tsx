@@ -7,6 +7,12 @@ export interface EmpresaInfo {
   nome: string;
   codigoAcesso: string;
   municipio: string;
+  cidade?: string;
+  estado?: string;
+  logoUrl?: string;
+  assinaturaUrl?: string;
+  responsavelNome?: string;
+  responsavelCargo?: string;
 }
 
 interface OrdemServicoPrintProps {
@@ -19,7 +25,8 @@ interface OrdemServicoPrintProps {
 const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServicoPrintProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const osNumber = String(order.id).slice(-6).toUpperCase();
-  const logoUrl = window.location.origin + '/images/ippark-watermark.png';
+  const ipparkWatermark = window.location.origin + '/images/ippark-watermark.png';
+  const empresaLogo = empresa.logoUrl || ipparkWatermark;
 
   const statusLabel = order.status === 'executado' ? 'EXECUTADO' :
     order.status === 'aprovado' ? 'APROVADO' :
@@ -34,7 +41,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServic
     order.status === 'rejeitado' ? '#fecaca' : '#fef3c7';
 
   const dataDoc = order.data_solicitacao || new Date(order.created_at).toLocaleDateString('pt-BR');
-  const geradoEm = new Date().toLocaleString('pt-BR');
+  const localizacaoCompleta = [empresa.cidade || empresa.municipio, empresa.estado].filter(Boolean).join(' - ');
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -43,200 +50,237 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServic
       <!DOCTYPE html><html><head><title>O.S. ${osNumber}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        @page { size: A4; margin: 10mm 15mm; }
-        body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; font-size: 11px; }
-        .page { width: 100%; max-width: 210mm; margin: 0 auto; }
-        .header-bar { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #1e3a5f; padding-bottom: 10px; margin-bottom: 10px; }
-        .header-logo img { width: 70px; height: 70px; object-fit: contain; }
-        .header-info { flex: 1; }
-        .header-info h1 { font-size: 18px; color: #1e3a5f; letter-spacing: 2px; margin-bottom: 1px; }
-        .header-info .sub { font-size: 11px; color: #555; }
-        .header-info .code { font-size: 10px; color: #777; margin-top: 2px; }
-        .title-bar { text-align: center; font-size: 15px; font-weight: bold; color: #1e3a5f; margin-bottom: 8px; letter-spacing: 2px; padding: 6px 0; border: 2px solid #1e3a5f; border-radius: 4px; background: #f0f4f8; }
-        .meta-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px; }
-        .meta-row .os-num { font-weight: bold; font-size: 13px; color: #1e3a5f; }
-        .status-badge { display: inline-block; padding: 3px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-        .section { border: 1px solid #ccc; margin-bottom: 8px; border-radius: 4px; overflow: hidden; }
-        .section-title { background: #1e3a5f; color: #fff; padding: 5px 12px; font-size: 10px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
-        .section-body { padding: 6px 12px; }
-        .field-row { display: flex; gap: 16px; margin-bottom: 3px; flex-wrap: wrap; }
-        .field { flex: 1; min-width: 45%; }
+        @page { size: A4; margin: 8mm 12mm; }
+        body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; color: #1a1a1a; font-size: 10.5px; }
+        .page { width: 100%; max-width: 210mm; margin: 0 auto; position: relative; }
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; opacity: 0.06; z-index: 0; pointer-events: none; }
+        .watermark img { width: 100%; height: 100%; object-fit: contain; }
+        .content { position: relative; z-index: 1; }
+        .header { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #1e3a5f; padding-bottom: 8px; margin-bottom: 8px; }
+        .header-logo { width: 70px; height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px; }
+        .header-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .header-center { flex: 1; text-align: center; }
+        .header-center h1 { font-size: 17px; color: #1e3a5f; letter-spacing: 3px; margin-bottom: 2px; }
+        .header-center .empresa { font-size: 12px; font-weight: bold; color: #333; }
+        .header-center .loc { font-size: 10px; color: #666; }
+        .header-center .code { font-size: 9px; color: #888; }
+        .header-right { text-align: right; min-width: 110px; }
+        .header-right .num { font-size: 12px; font-weight: bold; color: #1e3a5f; }
+        .header-right .data { font-size: 9px; color: #555; margin: 2px 0; }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 10px; }
+        .section { border: 1px solid #d1d5db; margin-bottom: 6px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.85); }
+        .section-title { background: #1e3a5f; color: #fff; padding: 4px 10px; font-size: 9.5px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .section-body { padding: 5px 10px; }
+        .field-row { display: flex; gap: 14px; margin-bottom: 2px; flex-wrap: wrap; }
+        .field { flex: 1; min-width: 45%; font-size: 10px; }
         .field-label { font-weight: bold; color: #444; }
-        .obs-box { min-height: 30px; padding: 5px; background: #fafafa; border: 1px dashed #ddd; border-radius: 3px; margin-top: 3px; white-space: pre-wrap; font-size: 10px; }
-        .signatures { display: flex; justify-content: space-between; margin-top: 25px; gap: 16px; }
-        .sig-block { flex: 1; text-align: center; padding-top: 25px; }
-        .sig-block .line { border-top: 1px solid #333; margin-bottom: 4px; }
-        .sig-block span { font-size: 9px; color: #555; }
-        .footer { text-align: center; margin-top: 12px; font-size: 8px; color: #999; border-top: 1px solid #ddd; padding-top: 5px; }
-        .footer .resp { font-size: 9px; color: #555; margin-bottom: 2px; }
+        .obs-box { min-height: 26px; padding: 4px 6px; background: #fafafa; border: 1px dashed #ddd; border-radius: 3px; white-space: pre-wrap; font-size: 9.5px; }
+        table.materiais { width: 100%; border-collapse: collapse; font-size: 10px; }
+        table.materiais th { background: #f0f4f8; color: #1e3a5f; padding: 4px; text-align: left; border: 1px solid #d1d5db; }
+        table.materiais td { padding: 4px; border: 1px solid #e5e7eb; }
+        .signatures { display: flex; justify-content: space-around; margin-top: 18px; gap: 30px; }
+        .sig-block { flex: 1; text-align: center; }
+        .sig-img { height: 50px; margin-bottom: 2px; display: flex; align-items: flex-end; justify-content: center; }
+        .sig-img img { max-height: 50px; max-width: 180px; object-fit: contain; }
+        .sig-line { border-top: 1px solid #333; margin: 0 10px 4px; padding-top: 3px; }
+        .sig-block .nome { font-size: 10px; font-weight: bold; color: #222; }
+        .sig-block .cargo { font-size: 9px; color: #555; }
+        .footer { text-align: center; margin-top: 10px; font-size: 8px; color: #999; border-top: 1px solid #ddd; padding-top: 4px; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } button { display: none !important; } }
       </style>
       </head><body>
         <div class="page">
-          <div class="header-bar">
-            <div class="header-logo"><img src="${logoUrl}" alt="Logo" /></div>
-            <div class="header-info">
-              <h1>IPPARK</h1>
-              <div class="sub">Iluminação Pública – ${empresa.municipio}</div>
-              <div class="code">Código de Acesso: ${empresa.codigoAcesso}</div>
-            </div>
-            <div style="text-align:right;font-size:10px;color:#777;">
-              <div style="font-weight:bold;color:#1e3a5f;">Empresa</div>
-              <div>${empresa.nome}</div>
-            </div>
-          </div>
-
-          <div class="title-bar">ORDEM DE SERVIÇO</div>
-
-          <div class="meta-row">
-            <div><span class="os-num">O.S. Nº ${osNumber}</span></div>
-            <div>Data: ${dataDoc}</div>
-            <div>Responsável: ${responsavel || '—'}</div>
-            <div><span class="status-badge" style="background:${statusBg};color:${statusColor}">${statusLabel}</span></div>
-          </div>
-
-          <div class="section">
-            <div class="section-title">Dados do Solicitante</div>
-            <div class="section-body">
-              <div class="field-row">
-                <div class="field"><span class="field-label">Nome:</span> ${order.solicitante || '—'}</div>
-                <div class="field"><span class="field-label">CPF:</span> ${order.cpf || '—'}</div>
+          <div class="watermark"><img src="${ipparkWatermark}" alt="" /></div>
+          <div class="content">
+            <div class="header">
+              <div class="header-logo"><img src="${empresaLogo}" alt="Logo" /></div>
+              <div class="header-center">
+                <h1>ORDEM DE SERVIÇO</h1>
+                <div class="empresa">${empresa.nome}</div>
+                <div class="loc">${localizacaoCompleta || ''}</div>
+                <div class="code">Código de Acesso: ${empresa.codigoAcesso}</div>
               </div>
-              <div class="field-row">
-                <div class="field"><span class="field-label">Rua:</span> ${order.rua || '—'}</div>
-                <div class="field"><span class="field-label">Bairro:</span> ${order.bairro || '—'}</div>
+              <div class="header-right">
+                <div class="num">Nº ${osNumber}</div>
+                <div class="data">Data: ${dataDoc}</div>
+                <span class="status-badge" style="background:${statusBg};color:${statusColor}">${statusLabel}</span>
               </div>
             </div>
-          </div>
 
-          <div class="section">
-            <div class="section-title">Dados do Atendimento</div>
-            <div class="section-body">
-              <div class="field-row">
-                <div class="field"><span class="field-label">Descrição:</span> ${order.observacoes_atendimento || '—'}</div>
-              </div>
-              <div class="field-row">
-                <div class="field"><span class="field-label">Código do Poste:</span> ${order.codigo_poste || '—'}</div>
-                <div class="field"><span class="field-label">Localização:</span> ${order.localizacao || '—'}</div>
-              </div>
-              <div class="field-row">
-                <div class="field"><span class="field-label">Tipo de Serviço:</span> ${order.tipo_servico || '—'}</div>
-                <div class="field"><span class="field-label">Tipo de Lâmpada:</span> ${order.tipo_lampada || '—'}</div>
-              </div>
-              <div class="field-row">
-                <div class="field"><span class="field-label">Data da Solicitação:</span> ${order.data_solicitacao || '—'}</div>
+            <div class="section">
+              <div class="section-title">Dados do Solicitante</div>
+              <div class="section-body">
+                <div class="field-row">
+                  <div class="field"><span class="field-label">Nome:</span> ${order.solicitante || '—'}</div>
+                  <div class="field"><span class="field-label">CPF:</span> ${order.cpf || '—'}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><span class="field-label">Rua:</span> ${order.rua || '—'}</div>
+                  <div class="field"><span class="field-label">Bairro:</span> ${order.bairro || '—'}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><span class="field-label">Localização:</span> ${order.localizacao || '—'}</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="section">
-            <div class="section-title">Materiais Utilizados</div>
-            <div class="section-body">
-              <div class="obs-box">${order.tipo_lampada ? `• ${order.tipo_lampada} (1 unidade)` : 'Nenhum material registrado'}</div>
+            <div class="section">
+              <div class="section-title">Dados do Atendimento</div>
+              <div class="section-body">
+                <div class="field-row">
+                  <div class="field" style="min-width:100%"><span class="field-label">Descrição:</span> ${order.observacoes_atendimento || '—'}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><span class="field-label">Código do Poste:</span> ${order.codigo_poste || '—'}</div>
+                  <div class="field"><span class="field-label">Tipo de Serviço:</span> ${order.tipo_servico || '—'}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><span class="field-label">Tipo de Lâmpada:</span> ${order.tipo_lampada || '—'}</div>
+                  <div class="field"><span class="field-label">Data da Solicitação:</span> ${order.data_solicitacao || '—'}</div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div class="section">
-            <div class="section-title">Observações</div>
-            <div class="section-body">
-              <div class="obs-box">${order.observacoes_atendimento || '—'}</div>
+            <div class="section">
+              <div class="section-title">Materiais Utilizados</div>
+              <div class="section-body">
+                <table class="materiais">
+                  <thead><tr><th style="width:75%">Produto</th><th>Quantidade</th></tr></thead>
+                  <tbody>
+                    ${order.tipo_lampada
+                      ? `<tr><td>${order.tipo_lampada}</td><td>1</td></tr>`
+                      : `<tr><td colspan="2" style="text-align:center;color:#999">Nenhum material registrado</td></tr>`}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
 
-          <div class="section">
-            <div class="section-title">Observações Técnico / Gestor</div>
-            <div class="section-body">
-              <div class="obs-box">${order.observacoes_tecnico || order.comments || '—'}</div>
+            <div class="section">
+              <div class="section-title">Observações</div>
+              <div class="section-body">
+                <div class="obs-box">${order.observacoes_atendimento || '—'}</div>
+              </div>
             </div>
-          </div>
 
-          <div class="signatures">
-            <div class="sig-block"><div class="line"></div><span>Solicitante</span></div>
-            <div class="sig-block"><div class="line"></div><span>Responsável Técnico</span></div>
-            <div class="sig-block"><div class="line"></div><span>Execução</span></div>
-          </div>
+            <div class="section">
+              <div class="section-title">Observações Técnico / Gestor</div>
+              <div class="section-body">
+                <div class="obs-box">${order.observacoes_tecnico || order.comments || '—'}</div>
+              </div>
+            </div>
 
-          <div class="footer">
-            <div class="resp">Responsável: ${responsavel || '—'} | Data: ${geradoEm}</div>
-            Documento gerado automaticamente pelo sistema – IPPARK – ${empresa.nome}
+            <div class="signatures">
+              <div class="sig-block">
+                <div class="sig-img">${empresa.assinaturaUrl ? `<img src="${empresa.assinaturaUrl}" alt="Assinatura" />` : ''}</div>
+                <div class="sig-line"></div>
+                <div class="nome">${empresa.responsavelNome || '—'}</div>
+                <div class="cargo">${empresa.responsavelCargo || 'Responsável'}</div>
+              </div>
+              <div class="sig-block">
+                <div class="sig-img"></div>
+                <div class="sig-line"></div>
+                <div class="nome">&nbsp;</div>
+                <div class="cargo">Técnico Responsável (Execução)</div>
+              </div>
+            </div>
+
+            <div class="footer">
+              Documento gerado pelo sistema IPPARK – ${empresa.nome} – ${new Date().toLocaleString('pt-BR')}
+            </div>
           </div>
         </div>
-        <script>window.onload=function(){window.print()}</script>
+        <script>window.onload=function(){setTimeout(function(){window.print()},300)}</script>
       </body></html>
     `);
     printWindow.document.close();
   };
 
-  const handleExportPDF = () => {
+  const loadImg = (url: string): Promise<HTMLImageElement | null> =>
+    new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const handleExportPDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const w = doc.internal.pageSize.getWidth();
-    let y = 15;
+    const h = doc.internal.pageSize.getHeight();
 
-    // Header with logo placeholder + empresa info
-    doc.setFillColor(30, 58, 95);
-    doc.rect(15, y - 5, 15, 15, 'F');
-    doc.setTextColor(255);
-    doc.setFontSize(7);
-    doc.text('IP', 22.5, y + 3, { align: 'center' });
+    // Watermark IPPARK central
+    const wm = await loadImg(ipparkWatermark);
+    if (wm) {
+      const size = 110;
+      // @ts-ignore
+      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.06 }) : null;
+      if (gState) (doc as any).setGState(gState);
+      doc.addImage(wm, 'PNG', (w - size) / 2, (h - size) / 2, size, size);
+      if (gState) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
+    }
 
+    let y = 12;
+
+    // Logo empresa
+    const logo = empresa.logoUrl ? await loadImg(empresa.logoUrl) : wm;
+    if (logo) {
+      doc.addImage(logo, 'PNG', 12, y, 18, 18);
+    }
+
+    // Centro - título
     doc.setTextColor(30, 58, 95);
-    doc.setFontSize(18);
-    doc.text('IPPARK', 35, y);
-    y += 5;
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Iluminação Pública – ${empresa.municipio}`, 35, y);
-    y += 4;
-    doc.setFontSize(8);
-    doc.setTextColor(130);
-    doc.text(`${empresa.nome} | Código: ${empresa.codigoAcesso}`, 35, y);
-    y += 5;
-    doc.setDrawColor(30, 58, 95);
-    doc.setLineWidth(0.8);
-    doc.line(15, y, w - 15, y);
-    y += 7;
-
-    // Title
-    doc.setFillColor(240, 244, 248);
-    doc.setDrawColor(30, 58, 95);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(15, y - 3, w - 30, 10, 2, 2, 'FD');
-    doc.setFontSize(13);
-    doc.setTextColor(30, 58, 95);
-    doc.text('ORDEM DE SERVIÇO', w / 2, y + 4, { align: 'center' });
-    y += 12;
-
-    // Meta info
-    doc.setFontSize(10);
-    doc.setTextColor(0);
     doc.setFont('helvetica', 'bold');
-    doc.text(`O.S. Nº ${osNumber}`, 15, y);
+    doc.setFontSize(15);
+    doc.text('ORDEM DE SERVIÇO', w / 2, y + 5, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
+    doc.text(empresa.nome, w / 2, y + 10, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.text(`Data: ${dataDoc}`, w / 2, y, { align: 'center' });
-    doc.text(`Status: ${statusLabel}`, w - 15, y, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(110);
+    doc.text(localizacaoCompleta, w / 2, y + 14, { align: 'center' });
+    doc.text(`Código: ${empresa.codigoAcesso}`, w / 2, y + 17.5, { align: 'center' });
+
+    // Direita
+    doc.setTextColor(30, 58, 95);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(`Nº ${osNumber}`, w - 12, y + 5, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80);
+    doc.text(`Data: ${dataDoc}`, w - 12, y + 10, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(statusColor);
+    doc.text(statusLabel, w - 12, y + 15, { align: 'right' });
+
+    y += 22;
+    doc.setDrawColor(30, 58, 95);
+    doc.setLineWidth(0.7);
+    doc.line(12, y, w - 12, y);
     y += 5;
-    doc.text(`Responsável: ${responsavel || '—'}`, 15, y);
-    y += 7;
 
     const addSection = (title: string, rows: string[][]) => {
       doc.setFillColor(30, 58, 95);
-      doc.rect(15, y, w - 30, 7, 'F');
+      doc.rect(12, y, w - 24, 6, 'F');
       doc.setTextColor(255);
-      doc.setFontSize(9);
-      doc.text(title.toUpperCase(), 18, y + 5);
-      y += 9;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.text(title.toUpperCase(), 14, y + 4);
+      y += 8;
       doc.setTextColor(0);
       doc.setFontSize(9);
       rows.forEach(([label, value]) => {
         doc.setFont('helvetica', 'bold');
-        doc.text(`${label}:`, 18, y);
+        doc.text(`${label}:`, 14, y);
         doc.setFont('helvetica', 'normal');
-        const maxW = w - 65;
-        const lines = doc.splitTextToSize(value || '—', maxW);
-        doc.text(lines, 60, y);
-        y += 5 * lines.length;
+        const lines = doc.splitTextToSize(value || '—', w - 70);
+        doc.text(lines, 55, y);
+        y += 4.5 * lines.length;
       });
-      y += 3;
+      y += 2;
     };
 
     addSection('Dados do Solicitante', [
@@ -244,49 +288,62 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServic
       ['CPF', order.cpf || '—'],
       ['Rua', order.rua || '—'],
       ['Bairro', order.bairro || '—'],
+      ['Localização', order.localizacao || '—'],
     ]);
 
     addSection('Dados do Atendimento', [
       ['Descrição', order.observacoes_atendimento || '—'],
       ['Código do Poste', order.codigo_poste || '—'],
-      ['Localização', order.localizacao || '—'],
       ['Tipo de Serviço', order.tipo_servico || '—'],
       ['Tipo de Lâmpada', order.tipo_lampada || '—'],
-      ['Data da Solicitação', order.data_solicitacao || '—'],
+      ['Data Solicitação', order.data_solicitacao || '—'],
     ]);
 
     addSection('Materiais Utilizados', [
-      ['Material', order.tipo_lampada ? `${order.tipo_lampada} (1 unidade)` : 'Nenhum material registrado'],
+      ['Produto', order.tipo_lampada ? `${order.tipo_lampada} — Qtd: 1` : 'Nenhum material registrado'],
     ]);
 
-    addSection('Observações', [
-      ['Observações', order.observacoes_atendimento || '—'],
-    ]);
+    addSection('Observações', [['', order.observacoes_atendimento || '—']]);
+    addSection('Observações Técnico/Gestor', [['', order.observacoes_tecnico || order.comments || '—']]);
 
-    addSection('Observações Técnico/Gestor', [
-      ['Observações', order.observacoes_tecnico || order.comments || '—'],
-    ]);
+    // Assinaturas
+    const sigY = Math.max(y + 12, h - 40);
+    const leftX = w * 0.27;
+    const rightX = w * 0.73;
 
-    // Signatures
-    y = Math.max(y + 10, 240);
-    const sigPositions = [w * 0.2, w * 0.5, w * 0.8];
-    const sigLabels = ['Solicitante', 'Resp. Técnico', 'Execução'];
-    sigPositions.forEach((x, i) => {
-      doc.line(x - 25, y, x + 25, y);
-      doc.setFontSize(8);
-      doc.setTextColor(80);
-      doc.text(sigLabels[i], x, y + 4, { align: 'center' });
-    });
+    if (empresa.assinaturaUrl) {
+      const sig = await loadImg(empresa.assinaturaUrl);
+      if (sig) doc.addImage(sig, 'PNG', leftX - 22, sigY - 16, 44, 14);
+    }
+
+    doc.setDrawColor(60);
+    doc.line(leftX - 30, sigY, leftX + 30, sigY);
+    doc.line(rightX - 30, sigY, rightX + 30, sigY);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(30);
+    doc.text(empresa.responsavelNome || '—', leftX, sigY + 4, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90);
+    doc.text(empresa.responsavelCargo || 'Responsável', leftX, sigY + 8, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(30);
+    doc.text(' ', rightX, sigY + 4, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90);
+    doc.text('Técnico Responsável (Execução)', rightX, sigY + 8, { align: 'center' });
 
     // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(100);
-    doc.text(`Responsável: ${responsavel || '—'} | Data: ${geradoEm}`, w / 2, 280, { align: 'center' });
     doc.setFontSize(7);
-    doc.setTextColor(150);
+    doc.setTextColor(140);
     doc.text(
-      `Documento gerado automaticamente pelo sistema – IPPARK – ${empresa.nome}`,
-      w / 2, 285, { align: 'center' }
+      `Documento gerado pelo sistema IPPARK – ${empresa.nome} – ${new Date().toLocaleString('pt-BR')}`,
+      w / 2, h - 6, { align: 'center' }
     );
 
     doc.save(`OS_${osNumber}.pdf`);
@@ -294,91 +351,118 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServic
 
   return (
     <div className="space-y-4">
-      {/* Preview */}
-      <div ref={printRef} className="bg-white rounded-lg border shadow-sm p-6 max-w-3xl mx-auto text-sm">
-        {/* Header with empresa identity */}
-        <div className="flex items-center gap-4 border-b-2 border-[#1e3a5f] pb-3 mb-4">
-          <img src={logoUrl} alt="Logo IPPARK" className="w-16 h-16 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-[#1e3a5f] tracking-widest">IPPARK</h1>
-            <p className="text-xs text-muted-foreground">Iluminação Pública – {empresa.municipio}</p>
-            <p className="text-[10px] text-muted-foreground">Código de Acesso: {empresa.codigoAcesso}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-bold text-[#1e3a5f]">Empresa</p>
-            <p className="text-xs text-muted-foreground">{empresa.nome}</p>
-          </div>
+      <div ref={printRef} className="relative bg-white rounded-lg border shadow-sm p-6 max-w-4xl mx-auto text-sm overflow-hidden">
+        {/* Marca d'água IPPARK */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <img src={ipparkWatermark} alt="" className="w-[60%] max-w-[420px] opacity-[0.06]" />
         </div>
 
-        {/* Title */}
-        <div className="text-center text-base font-bold text-[#1e3a5f] tracking-wider mb-3 border-2 border-[#1e3a5f] rounded py-1.5 bg-blue-50/50">
-          ORDEM DE SERVIÇO
-        </div>
-
-        {/* Meta */}
-        <div className="flex flex-wrap justify-between items-center mb-4 text-xs gap-2">
-          <span className="font-bold text-[#1e3a5f]">O.S. Nº {osNumber}</span>
-          <span>Data: {dataDoc}</span>
-          <span>Responsável: {responsavel || '—'}</span>
-          <span className="px-3 py-1 rounded text-xs font-bold" style={{ background: statusBg, color: statusColor }}>{statusLabel}</span>
-        </div>
-
-        <Section title="Dados do Solicitante">
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Nome" value={order.solicitante} />
-            <Field label="CPF" value={order.cpf} />
-            <Field label="Rua" value={order.rua} />
-            <Field label="Bairro" value={order.bairro} />
-          </div>
-        </Section>
-
-        <Section title="Dados do Atendimento">
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Descrição" value={order.observacoes_atendimento} />
-            <Field label="Código do Poste" value={order.codigo_poste} />
-            <Field label="Localização" value={order.localizacao} />
-            <Field label="Tipo de Serviço" value={order.tipo_servico} />
-            <Field label="Tipo de Lâmpada" value={order.tipo_lampada} />
-            <Field label="Data da Solicitação" value={order.data_solicitacao} />
-          </div>
-        </Section>
-
-        <Section title="Materiais Utilizados">
-          <p className="min-h-[20px] bg-muted/30 p-2 rounded border border-dashed text-xs">
-            {order.tipo_lampada ? `• ${order.tipo_lampada} (1 unidade)` : 'Nenhum material registrado'}
-          </p>
-        </Section>
-
-        <Section title="Observações">
-          <p className="min-h-[25px] bg-muted/30 p-2 rounded border border-dashed text-xs whitespace-pre-wrap">
-            {order.observacoes_atendimento || '—'}
-          </p>
-        </Section>
-
-        <Section title="Observações Técnico / Gestor">
-          <p className="min-h-[25px] bg-muted/30 p-2 rounded border border-dashed text-xs whitespace-pre-wrap">
-            {order.observacoes_tecnico || order.comments || '—'}
-          </p>
-        </Section>
-
-        {/* Signatures */}
-        <div className="flex justify-between mt-6 pt-4">
-          {['Solicitante', 'Responsável Técnico', 'Execução'].map(label => (
-            <div key={label} className="text-center w-[30%]">
-              <div className="border-t border-foreground/40 mb-1"></div>
-              <span className="text-[10px] text-muted-foreground">{label}</span>
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex items-center gap-4 border-b-[3px] border-[#1e3a5f] pb-2 mb-3">
+            <div className="w-[70px] h-[70px] flex items-center justify-center bg-white border rounded p-1 shrink-0">
+              <img
+                src={empresaLogo}
+                alt="Logo"
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
             </div>
-          ))}
-        </div>
+            <div className="flex-1 text-center">
+              <h1 className="text-lg font-bold text-[#1e3a5f] tracking-[3px]">ORDEM DE SERVIÇO</h1>
+              <p className="text-sm font-bold text-foreground">{empresa.nome}</p>
+              <p className="text-[11px] text-muted-foreground">{localizacaoCompleta}</p>
+              <p className="text-[10px] text-muted-foreground">Código de Acesso: {empresa.codigoAcesso}</p>
+            </div>
+            <div className="text-right min-w-[110px]">
+              <div className="text-sm font-bold text-[#1e3a5f]">Nº {osNumber}</div>
+              <div className="text-[10px] text-muted-foreground my-0.5">Data: {dataDoc}</div>
+              <span className="px-2.5 py-1 rounded text-[10px] font-bold inline-block" style={{ background: statusBg, color: statusColor }}>
+                {statusLabel}
+              </span>
+            </div>
+          </div>
 
-        {/* Footer */}
-        <div className="text-center mt-4 pt-2 border-t space-y-0.5">
-          <p className="text-[9px] text-muted-foreground">Responsável: {responsavel || '—'} | Data: {geradoEm}</p>
-          <p className="text-[8px] text-muted-foreground">Documento gerado automaticamente pelo sistema – IPPARK – {empresa.nome}</p>
+          <Section title="Dados do Solicitante">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <Field label="Nome" value={order.solicitante} />
+              <Field label="CPF" value={order.cpf} />
+              <Field label="Rua" value={order.rua} />
+              <Field label="Bairro" value={order.bairro} />
+              <Field label="Localização" value={order.localizacao} />
+            </div>
+          </Section>
+
+          <Section title="Dados do Atendimento">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <div className="sm:col-span-2"><Field label="Descrição" value={order.observacoes_atendimento} /></div>
+              <Field label="Código do Poste" value={order.codigo_poste} />
+              <Field label="Tipo de Serviço" value={order.tipo_servico} />
+              <Field label="Tipo de Lâmpada" value={order.tipo_lampada} />
+              <Field label="Data da Solicitação" value={order.data_solicitacao} />
+            </div>
+          </Section>
+
+          <Section title="Materiais Utilizados">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-blue-50 text-[#1e3a5f]">
+                  <th className="text-left p-1.5 border">Produto</th>
+                  <th className="text-left p-1.5 border w-24">Quantidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.tipo_lampada ? (
+                  <tr><td className="p-1.5 border">{order.tipo_lampada}</td><td className="p-1.5 border">1</td></tr>
+                ) : (
+                  <tr><td colSpan={2} className="p-2 text-center text-muted-foreground border">Nenhum material registrado</td></tr>
+                )}
+              </tbody>
+            </table>
+          </Section>
+
+          <Section title="Observações">
+            <p className="min-h-[24px] bg-muted/30 p-2 rounded border border-dashed text-xs whitespace-pre-wrap">
+              {order.observacoes_atendimento || '—'}
+            </p>
+          </Section>
+
+          <Section title="Observações Técnico / Gestor">
+            <p className="min-h-[24px] bg-muted/30 p-2 rounded border border-dashed text-xs whitespace-pre-wrap">
+              {order.observacoes_tecnico || order.comments || '—'}
+            </p>
+          </Section>
+
+          {/* Assinaturas - apenas DUAS */}
+          <div className="grid grid-cols-2 gap-8 mt-6 pt-4">
+            <div className="text-center">
+              <div className="h-[55px] flex items-end justify-center mb-1">
+                {empresa.assinaturaUrl && (
+                  <img src={empresa.assinaturaUrl} alt="Assinatura" className="max-h-[55px] max-w-[200px] object-contain" />
+                )}
+              </div>
+              <div className="border-t border-foreground/60 pt-1 mx-4">
+                <p className="text-xs font-bold">{empresa.responsavelNome || '—'}</p>
+                <p className="text-[10px] text-muted-foreground">{empresa.responsavelCargo || 'Responsável'}</p>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="h-[55px]"></div>
+              <div className="border-t border-foreground/60 pt-1 mx-4">
+                <p className="text-xs font-bold">&nbsp;</p>
+                <p className="text-[10px] text-muted-foreground">Técnico Responsável (Execução)</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-4 pt-2 border-t">
+            <p className="text-[9px] text-muted-foreground">
+              Documento gerado pelo sistema IPPARK – {empresa.nome} – {new Date().toLocaleString('pt-BR')}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-center gap-3">
         <Button onClick={handlePrint} className="gap-2">
           <Printer className="w-4 h-4" /> Imprimir O.S.
@@ -396,7 +480,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServic
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border rounded mb-2 overflow-hidden">
+    <div className="border rounded mb-2 overflow-hidden bg-white/85">
       <div className="bg-[#1e3a5f] text-white px-3 py-1.5 text-[10px] font-bold tracking-wide uppercase">{title}</div>
       <div className="p-2">{children}</div>
     </div>
