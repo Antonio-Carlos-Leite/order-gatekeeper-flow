@@ -11,9 +11,10 @@ import ApprovedOrders from '@/components/ApprovedOrders';
 import EstoquePanel from '@/components/EstoquePanel';
 import OrdemServicoForm from '@/components/OrdemServicoForm';
 import OrdemServicoList from '@/components/OrdemServicoList';
+import EmpresaConfig from '@/components/EmpresaConfig';
 import MaintenanceSection from '@/components/MaintenanceSection';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list';
+type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list' | 'empresa-config';
 
 const Index = () => {
   const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
