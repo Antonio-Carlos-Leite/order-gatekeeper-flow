@@ -20,9 +20,10 @@ interface OrdemServicoPrintProps {
   empresa: EmpresaInfo;
   responsavel?: string;
   onClose?: () => void;
+  preview?: boolean;
 }
 
-const OrdemServicoPrint = ({ order, empresa, responsavel, onClose }: OrdemServicoPrintProps) => {
+const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: OrdemServicoPrintProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const osNumber = String(order.id).slice(-6).toUpperCase();
   const ipparkWatermark = window.location.origin + '/images/ippark-watermark.png';
