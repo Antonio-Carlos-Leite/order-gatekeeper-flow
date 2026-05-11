@@ -3,7 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePedidos } from '@/hooks/usePedidos';
 import { useEstoque } from '@/hooks/useEstoque';
 import LoginForm from '@/components/LoginForm';
-import AppHeader from '@/components/AppHeader';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import AppSidebar, { type Page } from '@/components/AppSidebar';
+import AppTopbar from '@/components/AppTopbar';
 import OrderForm from '@/components/OrderForm';
 import MeusPedidos from '@/components/MeusPedidos';
 import DirectorApproval from '@/components/DirectorApproval';
@@ -14,8 +16,6 @@ import OrdemServicoList from '@/components/OrdemServicoList';
 import EmpresaConfig from '@/components/EmpresaConfig';
 import MaintenanceSection from '@/components/MaintenanceSection';
 
-type Page = 'order' | 'meus-pedidos' | 'approval' | 'approved' | 'estoque' | 'ordem-servico' | 'os-list' | 'empresa-config';
-
 const Index = () => {
   const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
   const { pedidos, pendingOrders, processedOrders, ordensServico, createPedido, createOrdemServico, approvePedido, updatePedidoStatus } = usePedidos(userInfo);
@@ -24,18 +24,16 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-surface">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
-  if (!userInfo) {
-    return <LoginForm />;
-  }
+  if (!userInfo) return <LoginForm />;
 
   if (maintenanceMode) {
     return <MaintenanceSection onExit={() => { setMaintenanceMode(false); signOut(); }} />;
@@ -64,24 +62,16 @@ const Index = () => {
   const handleOrderApproval = async (orderId: string, status: 'approved' | 'rejected', comments?: string) => {
     const dbStatus = status === 'approved' ? 'aprovado' : 'rejeitado';
     const { error } = await approvePedido(orderId, dbStatus as 'aprovado' | 'rejeitado', comments);
-    
     if (!error && status === 'approved') {
       const pedido = pedidos.find(p => p.id === orderId);
       if (pedido?.tipo_lampada) {
-        const produto = estoque.produtos.find(p => 
-          p.nome.toLowerCase() === pedido.tipo_lampada.toLowerCase()
-        );
+        const produto = estoque.produtos.find(p => p.nome.toLowerCase() === pedido.tipo_lampada.toLowerCase());
         if (produto && produto.quantidade_estoque > 0) {
           await estoque.registrarSaidaPedido(produto.id, 1, orderId);
         }
       }
     }
-    
     if (error) console.error('Error approving pedido:', error);
-  };
-
-  const handleLogout = async () => {
-    await signOut();
   };
 
   const mapPedidoToLegacy = (p: any) => ({
@@ -116,115 +106,122 @@ const Index = () => {
     if (userInfo.userType === 'estoque') return 'estoque';
     return 'order';
   };
-  const activePage = currentPage || defaultPage();
-
+  const activePage: Page = currentPage || defaultPage();
   const canAccessEstoque = userInfo.userType === 'diretor' || userInfo.userType === 'estoque';
 
+  const empresaInfo = {
+    nome: userInfo.municipio,
+    municipio: userInfo.municipio,
+    codigoAcesso: userInfo.codigoAcesso,
+    cidade: userInfo.cidade,
+    estado: userInfo.estado,
+    logoUrl: userInfo.logoUrl,
+    assinaturaUrl: userInfo.assinaturaUrl,
+    responsavelNome: userInfo.responsavelNome,
+    responsavelCargo: userInfo.responsavelCargo,
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <AppHeader
-        userInfo={userInfo}
-        currentPage={activePage}
-        onNavigate={setCurrentPage}
-        onLogout={handleLogout}
-        pendingCount={pendingOrders.length}
-        lowStockCount={estoque.produtosEstoqueBaixo.length}
-      />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar
+          userType={userInfo.userType}
+          currentPage={activePage}
+          onNavigate={setCurrentPage}
+          onLogout={signOut}
+          pendingCount={pendingOrders.length}
+          lowStockCount={estoque.produtosEstoqueBaixo.length}
+        />
 
-      <main className="max-w-7xl mx-auto p-4">
-        {activePage === 'order' && userInfo.userType === 'funcionario' && (
-          <OrderForm
-            userInfo={legacyUserInfo}
-            onSubmit={handleOrderSubmit}
-            onLogout={handleLogout}
-            onNavigateToApproved={() => setCurrentPage('approved')}
-          />
-        )}
-
-        {activePage === 'meus-pedidos' && userInfo.userType === 'funcionario' && (
-          <MeusPedidos pedidos={legacyAll} />
-        )}
-
-        {(activePage === 'approval' || (activePage === 'order' && userInfo.userType === 'diretor')) && userInfo.userType === 'diretor' && (
-          <DirectorApproval
-            orders={legacyPending}
-            userInfo={legacyUserInfo}
-            onApprove={handleOrderApproval}
-            onLogout={handleLogout}
-            onNavigateToApproved={() => setCurrentPage('approved')}
-            onNavigateToEstoque={() => setCurrentPage('estoque')}
-            lowStockCount={estoque.produtosEstoqueBaixo.length}
-          />
-        )}
-
-        {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
-          <OrdemServicoForm
-            onSubmit={handleOrdemServicoSubmit}
-            empresa={{
-              nome: userInfo.municipio,
-              municipio: userInfo.municipio,
-              codigoAcesso: userInfo.codigoAcesso,
-              cidade: userInfo.cidade,
-              estado: userInfo.estado,
-              logoUrl: userInfo.logoUrl,
-              assinaturaUrl: userInfo.assinaturaUrl,
-              responsavelNome: userInfo.responsavelNome,
-              responsavelCargo: userInfo.responsavelCargo,
-            }}
-            responsavel={userInfo.displayName}
-          />
-        )}
-
-        {activePage === 'os-list' && userInfo.userType === 'diretor' && (
-          <OrdemServicoList
-            orders={ordensServico}
-            empresa={{
-              nome: userInfo.municipio,
-              municipio: userInfo.municipio,
-              codigoAcesso: userInfo.codigoAcesso,
-              cidade: userInfo.cidade,
-              estado: userInfo.estado,
-              logoUrl: userInfo.logoUrl,
-              assinaturaUrl: userInfo.assinaturaUrl,
-              responsavelNome: userInfo.responsavelNome,
-              responsavelCargo: userInfo.responsavelCargo,
-            }}
-            userType={userInfo.userType}
-            responsavel={userInfo.displayName}
-            onUpdateStatus={updatePedidoStatus}
-          />
-        )}
-
-        {activePage === 'empresa-config' && userInfo.userType === 'diretor' && (
-          <EmpresaConfig userInfo={userInfo} />
-        )}
-
-        {activePage === 'approved' && (
-          <ApprovedOrders
-            approvedOrders={legacyProcessed}
-            userInfo={legacyUserInfo}
-            onLogout={handleLogout}
-            onBackToOrders={() => setCurrentPage(defaultPage())}
-            allOrders={legacyAll}
-          />
-        )}
-
-        {activePage === 'estoque' && canAccessEstoque && (
-          <EstoquePanel
-            produtos={estoque.produtos}
-            movimentacoes={estoque.movimentacoes}
-            produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
-            onAddProduto={estoque.addProduto}
-            onEditProduto={estoque.editProduto}
-            onDeleteProduto={estoque.deleteProduto}
-            onAddEntrada={estoque.addEntrada}
-            onAddSaida={estoque.addSaida}
-            onBack={() => setCurrentPage(defaultPage())}
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppTopbar
+            empresaNome={userInfo.municipio}
+            cidade={userInfo.cidade}
+            estado={userInfo.estado}
+            codigoAcesso={userInfo.codigoAcesso}
+            logoUrl={userInfo.logoUrl}
+            displayName={userInfo.displayName}
             userType={userInfo.userType}
           />
-        )}
-      </main>
-    </div>
+
+          <main className="flex-1 p-4 md:p-6 lg:p-8 bg-gradient-surface">
+            <div className="max-w-[1600px] mx-auto">
+              {activePage === 'order' && userInfo.userType === 'funcionario' && (
+                <OrderForm
+                  userInfo={legacyUserInfo}
+                  onSubmit={handleOrderSubmit}
+                  onLogout={signOut}
+                  onNavigateToApproved={() => setCurrentPage('approved')}
+                />
+              )}
+
+              {activePage === 'meus-pedidos' && userInfo.userType === 'funcionario' && (
+                <MeusPedidos pedidos={legacyAll} />
+              )}
+
+              {(activePage === 'approval' || (activePage === 'order' && userInfo.userType === 'diretor')) && userInfo.userType === 'diretor' && (
+                <DirectorApproval
+                  orders={legacyPending}
+                  userInfo={legacyUserInfo}
+                  onApprove={handleOrderApproval}
+                  onLogout={signOut}
+                  onNavigateToApproved={() => setCurrentPage('approved')}
+                  onNavigateToEstoque={() => setCurrentPage('estoque')}
+                  lowStockCount={estoque.produtosEstoqueBaixo.length}
+                />
+              )}
+
+              {activePage === 'ordem-servico' && userInfo.userType === 'diretor' && (
+                <OrdemServicoForm
+                  onSubmit={handleOrdemServicoSubmit}
+                  empresa={empresaInfo}
+                  responsavel={userInfo.displayName}
+                />
+              )}
+
+              {activePage === 'os-list' && userInfo.userType === 'diretor' && (
+                <OrdemServicoList
+                  orders={ordensServico}
+                  empresa={empresaInfo}
+                  userType={userInfo.userType}
+                  responsavel={userInfo.displayName}
+                  onUpdateStatus={updatePedidoStatus}
+                />
+              )}
+
+              {activePage === 'empresa-config' && userInfo.userType === 'diretor' && (
+                <EmpresaConfig userInfo={userInfo} />
+              )}
+
+              {activePage === 'approved' && (
+                <ApprovedOrders
+                  approvedOrders={legacyProcessed}
+                  userInfo={legacyUserInfo}
+                  onLogout={signOut}
+                  onBackToOrders={() => setCurrentPage(defaultPage())}
+                  allOrders={legacyAll}
+                />
+              )}
+
+              {activePage === 'estoque' && canAccessEstoque && (
+                <EstoquePanel
+                  produtos={estoque.produtos}
+                  movimentacoes={estoque.movimentacoes}
+                  produtosEstoqueBaixo={estoque.produtosEstoqueBaixo}
+                  onAddProduto={estoque.addProduto}
+                  onEditProduto={estoque.editProduto}
+                  onDeleteProduto={estoque.deleteProduto}
+                  onAddEntrada={estoque.addEntrada}
+                  onAddSaida={estoque.addSaida}
+                  onBack={() => setCurrentPage(defaultPage())}
+                  userType={userInfo.userType}
+                />
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
