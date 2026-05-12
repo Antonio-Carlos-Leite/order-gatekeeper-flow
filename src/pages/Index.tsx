@@ -147,11 +147,10 @@ const Index = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8 bg-gradient-surface">
             <div className="max-w-[1600px] mx-auto">
               {activePage === 'order' && userInfo.userType === 'funcionario' && (
-                <OrderForm
-                  userInfo={legacyUserInfo}
-                  onSubmit={handleOrderSubmit}
-                  onLogout={signOut}
-                  onNavigateToApproved={() => setCurrentPage('approved')}
+                <OrdemServicoForm
+                  onSubmit={async (data) => { await handleOrderSubmit(data); }}
+                  empresa={empresaInfo}
+                  responsavel={userInfo.displayName}
                 />
               )}
 
