@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle, XCircle, Calendar, FileText, Printer, Download, FileJson, FileSpreadsheet, FileDown, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { exportJSON, exportPDF, exportExcel } from '@/utils/backupExports';
 import { useState, useMemo } from 'react';
+import OrdemServicoPrint, { type EmpresaInfo } from './OrdemServicoPrint';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
@@ -17,12 +19,15 @@ interface ApprovedOrdersProps {
   onLogout: () => void;
   onBackToOrders: () => void;
   allOrders: any[];
+  empresa: EmpresaInfo;
+  responsavel?: string;
 }
 
-const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders }: ApprovedOrdersProps) => {
+const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders, empresa, responsavel }: ApprovedOrdersProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'rejected'>('all');
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   const filteredOrders = useMemo(() => {
     return approvedOrders.filter(order => {
@@ -39,105 +44,23 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders }:
   }, [approvedOrders, searchTerm, statusFilter]);
 
   const handlePrintOrder = (order: any) => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      const watermarkUrl = window.location.origin + '/images/ippark-watermark.png';
-      const isRejected = order.status === 'rejected';
-      const stampUrl = window.location.origin + (isRejected ? '/images/carimbo-reprovado.png' : '/images/carimbo-aprovado.png');
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Ordem de Serviço - O.S. Nº ${order.id}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: Arial, sans-serif; margin: 30px 40px; position: relative; color: #222; }
-            .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.35; width: 500px; pointer-events: none; z-index: 9999; }
-            .stamp-img { display: block; width: 150px; height: 150px; opacity: 0.85; pointer-events: none; }
-            .content { position: relative; z-index: 1; }
-            .page-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 8px; }
-            .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            .company-info { font-size: 12px; line-height: 1.6; }
-            .stamp-center { display: flex; align-items: center; justify-content: center; flex: 1; }
-            .company-name { font-size: 14px; font-weight: bold; }
-            .os-box { border: 2px solid #333; padding: 8px 16px; text-align: center; font-size: 13px; }
-            .os-box .os-number { font-weight: bold; font-size: 15px; }
-            .section { border: 1.5px solid #333; margin-bottom: 12px; }
-            .section-title { background: rgba(240,240,240,0.4); border-bottom: 1.5px solid #333; padding: 6px 12px; font-weight: bold; font-size: 13px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
-            .section-body { padding: 10px 14px; font-size: 12px; line-height: 1.8; }
-            .section-body .row { display: flex; gap: 20px; flex-wrap: wrap; }
-            .section-body .field { flex: 1; min-width: 45%; }
-            .field-label { font-weight: bold; }
-            .signatures { display: flex; justify-content: space-around; margin-top: 50px; padding-top: 10px; }
-            .sig-line { text-align: center; width: 40%; }
-            .sig-line hr { border: none; border-top: 1px solid #333; margin-bottom: 5px; }
-            .sig-line span { font-size: 11px; }
-            .status-badge { display: inline-block; background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-            @media print { button { display: none !important; } body { margin: 15px 25px; } }
-            .print-btn { display: block; margin: 20px auto; padding: 10px 30px; background: #333; color: #fff; border: none; cursor: pointer; font-size: 14px; border-radius: 4px; }
-            .print-btn:hover { background: #555; }
-          </style>
-        </head>
-        <body>
-          <img src="${watermarkUrl}" class="watermark" />
-          <div class="content">
-            <div class="page-title">REGISTRO DE ORDEM DE SERVIÇO</div>
-            <div class="header-row">
-              <div class="stamp-center" style="flex: 0 0 auto;"><img src="${stampUrl}" class="stamp-img" /></div>
-              <div class="company-info" style="flex: 1; text-align: center;">
-                <div class="company-name">IPPARK</div>
-                <div>Iluminação Pública</div>
-                <div>Município: ${order.municipio || '—'}</div>
-              </div>
-              <div class="os-box">
-                <div class="os-number">O.S. Nº: ${String(order.id).slice(-6).padStart(6, '0')}</div>
-                <div>Data de abertura: ${order.dataEnvio || '—'}</div>
-                <div>Aprovado em: ${order.approvedAt || '—'}</div>
-              </div>
-            </div>
-            <div class="section">
-              <div class="section-title">Dados do Solicitante</div>
-              <div class="section-body">
-                <div class="row">
-                  <div class="field"><span class="field-label">Solicitante:</span> ${order.solicitante || '—'}</div>
-                  <div class="field"><span class="field-label">Enviado por:</span> ${order.enviadoPor || '—'}</div>
-                </div>
-                <div class="row">
-                  <div class="field"><span class="field-label">Município:</span> ${order.municipio || '—'}</div>
-                  <div class="field"><span class="field-label">Status:</span> <span class="status-badge" style="${isRejected ? 'background:#fecaca;color:#991b1b;' : ''}">${isRejected ? '✗ Reprovado' : '✓ Aprovado'}</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="section">
-              <div class="section-title">Informações do Serviço</div>
-              <div class="section-body">
-                <div class="row">
-                  <div class="field"><span class="field-label">Código do Poste:</span> ${order.codigoDoPoste ?? '—'}</div>
-                  <div class="field"><span class="field-label">Tipo de Serviço:</span> ${order.tipoServico || '—'}</div>
-                </div>
-                ${order.tipoLampada ? `<div><span class="field-label">Tipo de Lâmpada:</span> ${order.tipoLampada}</div>` : ''}
-                ${order.produto ? `<div><span class="field-label">Produto:</span> ${order.produto}</div>` : ''}
-              </div>
-            </div>
-            <div class="section">
-              <div class="section-title">Observações do Atendimento</div>
-              <div class="section-body" style="min-height: 60px;">${order.observações || '&nbsp;'}</div>
-            </div>
-            <div class="section">
-              <div class="section-title">Observações Técnico/Gestor</div>
-              <div class="section-body" style="min-height: 60px;">${order.comments || '&nbsp;'}</div>
-            </div>
-            <div class="signatures">
-              <div class="sig-line"><hr/><span>Assinatura Solicitante</span></div>
-              <div class="sig-line"><hr/><span>Assinatura Responsável Técnico</span></div>
-            </div>
-            <button class="print-btn" onclick="window.print()">Imprimir</button>
-          </div>
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
+    // Converte legacy → novo formato esperado pelo OrdemServicoPrint
+    setSelectedOrder({
+      id: order.id,
+      status: order.status === 'approved' ? 'aprovado' : order.status === 'rejected' ? 'rejeitado' : 'pendente',
+      created_at: order.dataEnvio ? new Date().toISOString() : new Date().toISOString(),
+      solicitante: order.solicitante,
+      cpf: order.cpf,
+      rua: order.Rua,
+      bairro: order.Bairro,
+      localizacao: order.localização,
+      codigo_poste: order.codigoDoPoste,
+      tipo_servico: order.tipoServico || order.produto,
+      tipo_lampada: order.tipoLampada,
+      data_solicitacao: order.DatadaSolicitação,
+      observacoes_atendimento: order.observações,
+      observacoes_tecnico: order.comments,
+    });
   };
 
   const handleBackupJSON = () => {
@@ -313,6 +236,20 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders }:
           ))}
         </div>
       )}
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle className="sr-only">Ordem de Serviço</DialogTitle>
+          {selectedOrder && (
+            <OrdemServicoPrint
+              order={selectedOrder}
+              empresa={empresa}
+              responsavel={responsavel}
+              onClose={() => setSelectedOrder(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

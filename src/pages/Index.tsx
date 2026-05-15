@@ -199,6 +199,8 @@ const Index = () => {
                   onLogout={signOut}
                   onBackToOrders={() => setCurrentPage(defaultPage())}
                   allOrders={legacyAll}
+                  empresa={empresaInfo}
+                  responsavel={userInfo.displayName}
                 />
               )}
 
