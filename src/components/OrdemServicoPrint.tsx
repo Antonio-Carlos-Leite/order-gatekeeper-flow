@@ -62,9 +62,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
   const dataDoc = order.data_solicitacao || new Date(order.created_at).toLocaleDateString('pt-BR');
   const localizacaoCompleta = [empresa.cidade || empresa.municipio, empresa.estado].filter(Boolean).join(' - ');
 
-  const { tipo: tipoDetectado, potencia: potenciaDetectada } = parseLampada(order.tipo_lampada);
-
-  // ====== HTML para tabela "Observações do Técnico" (impressão) ======
+  // Seção MANUAL — sempre vazia, para o técnico preencher à caneta no campo.
   const tecnicoTableHTML = `
     <table class="tecnico">
       <thead>
@@ -78,19 +76,19 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         <tr>
           <td>
             ${TIPOS_LAMPADA.map(t => `
-              <div class="check"><span class="box">${tipoDetectado === t ? '✕' : ''}</span> ${t}</div>
+              <div class="check"><span class="box"></span> ${t}</div>
             `).join('')}
           </td>
           <td>
             <div class="pot-grid">
               ${POTENCIAS.map(p => `
-                <div class="check"><span class="box">${potenciaDetectada === p ? '✕' : ''}</span> ${p}</div>
+                <div class="check"><span class="box"></span> ${p}</div>
               `).join('')}
             </div>
           </td>
           <td>
             <div class="outros-label">Qual?</div>
-            <div class="outros-line">${order.outros_tecnico || ''}</div>
+            <div class="outros-line"></div>
           </td>
         </tr>
       </tbody>
