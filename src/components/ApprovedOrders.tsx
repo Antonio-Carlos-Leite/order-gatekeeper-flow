@@ -236,6 +236,20 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders, e
           ))}
         </div>
       )}
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle className="sr-only">Ordem de Serviço</DialogTitle>
+          {selectedOrder && (
+            <OrdemServicoPrint
+              order={selectedOrder}
+              empresa={empresa}
+              responsavel={responsavel}
+              onClose={() => setSelectedOrder(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
