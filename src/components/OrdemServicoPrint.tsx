@@ -433,36 +433,30 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
       doc.text(label, cx + 4, cy);
     };
 
-    // Coluna 1 – tipos
+    // Coluna 1 – tipos (vazios para preenchimento manual)
     let cy = y + 5;
     TIPOS_LAMPADA.forEach(t => {
-      drawCheck(tecX + 3, cy, tipoDetectado === t, t);
+      drawCheck(tecX + 3, cy, false, t);
       cy += 5.5;
     });
 
-    // Coluna 2 – potências em grid 3 colunas
+    // Coluna 2 – potências em grid 3 colunas (vazias)
     const potColWidth = col2W / 3;
     POTENCIAS.forEach((p, i) => {
       const cIdx = i % 3;
       const rIdx = Math.floor(i / 3);
       const px = tecX + col1W + 3 + cIdx * potColWidth;
       const py = y + 5 + rIdx * 6;
-      drawCheck(px, py, potenciaDetectada === p, p);
+      drawCheck(px, py, false, p);
     });
 
-    // Coluna 3 – outros
+    // Coluna 3 – outros (linha em branco para escrita manual)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(60);
     doc.text('Qual?', tecX + col1W + col2W + 3, y + 4);
     doc.setDrawColor(140);
     doc.line(tecX + col1W + col2W + 3, y + tecRowH - 4, tecX + col1W + col2W + col3W - 3, y + tecRowH - 4);
-    if (order.outros_tecnico) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(20);
-      doc.text(String(order.outros_tecnico), tecX + col1W + col2W + 3, y + tecRowH - 5);
-    }
 
     y += tecRowH + 4;
 
