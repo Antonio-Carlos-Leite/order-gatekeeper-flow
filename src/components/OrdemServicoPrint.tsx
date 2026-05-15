@@ -150,11 +150,11 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         table.tecnico { width: 92%; margin: 4px auto; border-collapse: collapse; font-size: 10px; background: rgba(255,255,255,0.85); border-radius: 6px; overflow: hidden; }
         table.tecnico th { background: #f3f6fb; color: #0B2E59; padding: 5px 8px; text-align: left; border: 1px solid #e5e7eb; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
         table.tecnico td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
-        .check { display: flex; align-items: center; gap: 5px; margin: 2px 0; font-size: 10px; }
-        .box { display: inline-block; width: 11px; height: 11px; border: 1.2px solid #0B2E59; border-radius: 2px; text-align: center; line-height: 9px; font-size: 10px; font-weight: bold; color: #0B2E59; }
-        .pot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px; }
-        .outros-label { font-weight: bold; color: #444; font-size: 9.5px; margin-bottom: 4px; }
-        .outros-line { border-bottom: 1px solid #999; min-height: 36px; padding: 2px; font-size: 10px; }
+        .check { display: flex; align-items: center; gap: 7px; margin: 5px 0; font-size: 11px; }
+        .box { display: inline-block; width: 16px; height: 16px; border: 1.5px solid #0B2E59; border-radius: 2px; background: #fff; flex-shrink: 0; }
+        .pot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 10px; }
+        .outros-label { font-weight: bold; color: #444; font-size: 10px; margin-bottom: 6px; }
+        .outros-line { border-bottom: 1.2px solid #555; min-height: 60px; padding: 2px; font-size: 10px; }
         .signatures { display: flex; justify-content: space-around; margin-top: 22px; gap: 30px; }
         .sig-block { flex: 1; text-align: center; }
         .sig-img { height: 50px; margin-bottom: 2px; display: flex; align-items: flex-end; justify-content: center; }
