@@ -27,6 +27,7 @@ const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders, e
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'rejected'>('all');
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   const filteredOrders = useMemo(() => {
     return approvedOrders.filter(order => {
