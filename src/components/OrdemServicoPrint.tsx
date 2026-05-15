@@ -166,7 +166,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           button { display: none !important; }
-          .watermark img { opacity: 0.10; }
+          .watermark img { opacity: 0.22; }
         }
       </style>
       </head><body>
