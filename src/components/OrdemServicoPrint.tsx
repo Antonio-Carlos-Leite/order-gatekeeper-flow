@@ -62,9 +62,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
   const dataDoc = order.data_solicitacao || new Date(order.created_at).toLocaleDateString('pt-BR');
   const localizacaoCompleta = [empresa.cidade || empresa.municipio, empresa.estado].filter(Boolean).join(' - ');
 
-  const { tipo: tipoDetectado, potencia: potenciaDetectada } = parseLampada(order.tipo_lampada);
-
-  // ====== HTML para tabela "Observações do Técnico" (impressão) ======
+  // Seção MANUAL — sempre vazia, para o técnico preencher à caneta no campo.
   const tecnicoTableHTML = `
     <table class="tecnico">
       <thead>
@@ -78,19 +76,19 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         <tr>
           <td>
             ${TIPOS_LAMPADA.map(t => `
-              <div class="check"><span class="box">${tipoDetectado === t ? '✕' : ''}</span> ${t}</div>
+              <div class="check"><span class="box"></span> ${t}</div>
             `).join('')}
           </td>
           <td>
             <div class="pot-grid">
               ${POTENCIAS.map(p => `
-                <div class="check"><span class="box">${potenciaDetectada === p ? '✕' : ''}</span> ${p}</div>
+                <div class="check"><span class="box"></span> ${p}</div>
               `).join('')}
             </div>
           </td>
           <td>
             <div class="outros-label">Qual?</div>
-            <div class="outros-line">${order.outros_tecnico || ''}</div>
+            <div class="outros-line"></div>
           </td>
         </tr>
       </tbody>
@@ -112,13 +110,18 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
           top: 0; left: 0; right: 0; bottom: 0;
           display: flex; align-items: center; justify-content: center;
           z-index: 0; pointer-events: none;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .watermark img {
-          width: 85%;
-          max-width: 170mm;
+          width: 95%;
+          max-width: 190mm;
           height: auto;
-          opacity: 0.08;
+          opacity: 0.22;
           object-fit: contain;
+          image-rendering: -webkit-optimize-contrast;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .content { position: relative; z-index: 1; }
         .header { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #0B2E59; padding-bottom: 8px; margin-bottom: 10px; }
@@ -147,11 +150,11 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         table.tecnico { width: 92%; margin: 4px auto; border-collapse: collapse; font-size: 10px; background: rgba(255,255,255,0.85); border-radius: 6px; overflow: hidden; }
         table.tecnico th { background: #f3f6fb; color: #0B2E59; padding: 5px 8px; text-align: left; border: 1px solid #e5e7eb; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
         table.tecnico td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
-        .check { display: flex; align-items: center; gap: 5px; margin: 2px 0; font-size: 10px; }
-        .box { display: inline-block; width: 11px; height: 11px; border: 1.2px solid #0B2E59; border-radius: 2px; text-align: center; line-height: 9px; font-size: 10px; font-weight: bold; color: #0B2E59; }
-        .pot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px; }
-        .outros-label { font-weight: bold; color: #444; font-size: 9.5px; margin-bottom: 4px; }
-        .outros-line { border-bottom: 1px solid #999; min-height: 36px; padding: 2px; font-size: 10px; }
+        .check { display: flex; align-items: center; gap: 7px; margin: 5px 0; font-size: 11px; }
+        .box { display: inline-block; width: 16px; height: 16px; border: 1.5px solid #0B2E59; border-radius: 2px; background: #fff; flex-shrink: 0; }
+        .pot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 10px; }
+        .outros-label { font-weight: bold; color: #444; font-size: 10px; margin-bottom: 6px; }
+        .outros-line { border-bottom: 1.2px solid #555; min-height: 60px; padding: 2px; font-size: 10px; }
         .signatures { display: flex; justify-content: space-around; margin-top: 22px; gap: 30px; }
         .sig-block { flex: 1; text-align: center; }
         .sig-img { height: 50px; margin-bottom: 2px; display: flex; align-items: flex-end; justify-content: center; }
@@ -163,7 +166,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           button { display: none !important; }
-          .watermark img { opacity: 0.10; }
+          .watermark img { opacity: 0.22; }
         }
       </style>
       </head><body>
@@ -289,10 +292,10 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
     const wm = await loadImg(ipparkWatermark);
     if (wm) {
       const ratio = wm.width / wm.height || 1.5;
-      const wmWidth = w * 0.8;
+      const wmWidth = w * 0.95;
       const wmHeight = wmWidth / ratio;
       // @ts-ignore
-      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.08 }) : null;
+      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.20 }) : null;
       if (gState) (doc as any).setGState(gState);
       doc.addImage(wm, 'PNG', (w - wmWidth) / 2, (h - wmHeight) / 2, wmWidth, wmHeight);
       if (gState) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
@@ -430,36 +433,30 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
       doc.text(label, cx + 4, cy);
     };
 
-    // Coluna 1 – tipos
+    // Coluna 1 – tipos (vazios para preenchimento manual)
     let cy = y + 5;
     TIPOS_LAMPADA.forEach(t => {
-      drawCheck(tecX + 3, cy, tipoDetectado === t, t);
+      drawCheck(tecX + 3, cy, false, t);
       cy += 5.5;
     });
 
-    // Coluna 2 – potências em grid 3 colunas
+    // Coluna 2 – potências em grid 3 colunas (vazias)
     const potColWidth = col2W / 3;
     POTENCIAS.forEach((p, i) => {
       const cIdx = i % 3;
       const rIdx = Math.floor(i / 3);
       const px = tecX + col1W + 3 + cIdx * potColWidth;
       const py = y + 5 + rIdx * 6;
-      drawCheck(px, py, potenciaDetectada === p, p);
+      drawCheck(px, py, false, p);
     });
 
-    // Coluna 3 – outros
+    // Coluna 3 – outros (linha em branco para escrita manual)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(60);
     doc.text('Qual?', tecX + col1W + col2W + 3, y + 4);
     doc.setDrawColor(140);
     doc.line(tecX + col1W + col2W + 3, y + tecRowH - 4, tecX + col1W + col2W + col3W - 3, y + tecRowH - 4);
-    if (order.outros_tecnico) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(20);
-      doc.text(String(order.outros_tecnico), tecX + col1W + col2W + 3, y + tecRowH - 5);
-    }
 
     y += tecRowH + 4;
 
@@ -516,8 +513,8 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
     <div className="space-y-4">
       <div ref={printRef} className="relative bg-white rounded-lg border shadow-sm p-6 max-w-4xl mx-auto text-sm overflow-hidden">
         {/* Marca d'água IPPARK – grande, centralizada */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img src={ipparkWatermark} alt="" className="w-[85%] max-w-[600px] opacity-[0.08]" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none print:opacity-100">
+          <img src={ipparkWatermark} alt="" className="w-[95%] max-w-[700px] opacity-20" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' } as any} />
         </div>
 
         <div className="relative z-10">
@@ -574,24 +571,22 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
                 <div className="px-2 py-1.5 border-r border-border">Potência (W)</div>
                 <div className="px-2 py-1.5">Outros</div>
               </div>
-              <div className="grid grid-cols-[30%_42%_28%] text-[11px]">
-                <div className="px-3 py-2 border-r border-border space-y-1">
+              <div className="grid grid-cols-[30%_42%_28%] text-[12px]">
+                <div className="px-3 py-3 border-r border-border space-y-2">
                   {TIPOS_LAMPADA.map(t => (
-                    <CheckRow key={t} label={t} checked={tipoDetectado === t} />
+                    <CheckRow key={t} label={t} checked={false} />
                   ))}
                 </div>
-                <div className="px-3 py-2 border-r border-border">
-                  <div className="grid grid-cols-3 gap-y-1 gap-x-2">
+                <div className="px-3 py-3 border-r border-border">
+                  <div className="grid grid-cols-3 gap-y-2 gap-x-3">
                     {POTENCIAS.map(p => (
-                      <CheckRow key={p} label={p} checked={potenciaDetectada === p} />
+                      <CheckRow key={p} label={p} checked={false} />
                     ))}
                   </div>
                 </div>
-                <div className="px-3 py-2">
+                <div className="px-3 py-3">
                   <div className="text-[10px] font-bold text-muted-foreground mb-1">Qual?</div>
-                  <div className="border-b border-foreground/40 min-h-[36px] text-[11px] py-0.5">
-                    {order.outros_tecnico || ''}
-                  </div>
+                  <div className="border-b border-foreground/50 min-h-[60px]"></div>
                 </div>
               </div>
             </div>
@@ -686,15 +681,15 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 
 function CheckRow({ label, checked }: { label: string; checked: boolean }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <span
-        className={`inline-flex items-center justify-center w-[13px] h-[13px] border rounded-sm text-[10px] font-bold leading-none ${
-          checked ? 'bg-[#0B2E59] text-white border-[#0B2E59]' : 'border-[#0B2E59] text-[#0B2E59]'
+        className={`inline-flex items-center justify-center w-[16px] h-[16px] border-[1.5px] rounded-sm text-[11px] font-bold leading-none ${
+          checked ? 'bg-[#0B2E59] text-white border-[#0B2E59]' : 'border-[#0B2E59] bg-white'
         }`}
       >
         {checked ? '✕' : ''}
       </span>
-      <span className="text-[11px] text-foreground">{label}</span>
+      <span className="text-[12px] text-foreground">{label}</span>
     </div>
   );
 }
