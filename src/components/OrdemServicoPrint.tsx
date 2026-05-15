@@ -681,15 +681,15 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 
 function CheckRow({ label, checked }: { label: string; checked: boolean }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <span
-        className={`inline-flex items-center justify-center w-[13px] h-[13px] border rounded-sm text-[10px] font-bold leading-none ${
-          checked ? 'bg-[#0B2E59] text-white border-[#0B2E59]' : 'border-[#0B2E59] text-[#0B2E59]'
+        className={`inline-flex items-center justify-center w-[16px] h-[16px] border-[1.5px] rounded-sm text-[11px] font-bold leading-none ${
+          checked ? 'bg-[#0B2E59] text-white border-[#0B2E59]' : 'border-[#0B2E59] bg-white'
         }`}
       >
         {checked ? '✕' : ''}
       </span>
-      <span className="text-[11px] text-foreground">{label}</span>
+      <span className="text-[12px] text-foreground">{label}</span>
     </div>
   );
 }
