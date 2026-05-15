@@ -571,24 +571,22 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
                 <div className="px-2 py-1.5 border-r border-border">Potência (W)</div>
                 <div className="px-2 py-1.5">Outros</div>
               </div>
-              <div className="grid grid-cols-[30%_42%_28%] text-[11px]">
-                <div className="px-3 py-2 border-r border-border space-y-1">
+              <div className="grid grid-cols-[30%_42%_28%] text-[12px]">
+                <div className="px-3 py-3 border-r border-border space-y-2">
                   {TIPOS_LAMPADA.map(t => (
-                    <CheckRow key={t} label={t} checked={tipoDetectado === t} />
+                    <CheckRow key={t} label={t} checked={false} />
                   ))}
                 </div>
-                <div className="px-3 py-2 border-r border-border">
-                  <div className="grid grid-cols-3 gap-y-1 gap-x-2">
+                <div className="px-3 py-3 border-r border-border">
+                  <div className="grid grid-cols-3 gap-y-2 gap-x-3">
                     {POTENCIAS.map(p => (
-                      <CheckRow key={p} label={p} checked={potenciaDetectada === p} />
+                      <CheckRow key={p} label={p} checked={false} />
                     ))}
                   </div>
                 </div>
-                <div className="px-3 py-2">
+                <div className="px-3 py-3">
                   <div className="text-[10px] font-bold text-muted-foreground mb-1">Qual?</div>
-                  <div className="border-b border-foreground/40 min-h-[36px] text-[11px] py-0.5">
-                    {order.outros_tecnico || ''}
-                  </div>
+                  <div className="border-b border-foreground/50 min-h-[60px]"></div>
                 </div>
               </div>
             </div>
