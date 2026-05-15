@@ -292,7 +292,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
     const wm = await loadImg(ipparkWatermark);
     if (wm) {
       const ratio = wm.width / wm.height || 1.5;
-      const wmWidth = w * 0.8;
+      const wmWidth = w * 0.95;
       const wmHeight = wmWidth / ratio;
       // @ts-ignore
       const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.08 }) : null;
