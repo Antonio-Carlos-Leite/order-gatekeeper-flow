@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle, XCircle, Calendar, FileText, Printer, Download, FileJson, FileSpreadsheet, FileDown, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { exportJSON, exportPDF, exportExcel } from '@/utils/backupExports';
 import { useState, useMemo } from 'react';
+import OrdemServicoPrint, { type EmpresaInfo } from './OrdemServicoPrint';
 
 interface ApprovedOrdersProps {
   approvedOrders: any[];
@@ -17,9 +19,11 @@ interface ApprovedOrdersProps {
   onLogout: () => void;
   onBackToOrders: () => void;
   allOrders: any[];
+  empresa: EmpresaInfo;
+  responsavel?: string;
 }
 
-const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders }: ApprovedOrdersProps) => {
+const ApprovedOrders = ({ approvedOrders, userInfo, onBackToOrders, allOrders, empresa, responsavel }: ApprovedOrdersProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'rejected'>('all');
