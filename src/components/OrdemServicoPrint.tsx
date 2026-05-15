@@ -295,7 +295,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
       const wmWidth = w * 0.95;
       const wmHeight = wmWidth / ratio;
       // @ts-ignore
-      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.08 }) : null;
+      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.20 }) : null;
       if (gState) (doc as any).setGState(gState);
       doc.addImage(wm, 'PNG', (w - wmWidth) / 2, (h - wmHeight) / 2, wmWidth, wmHeight);
       if (gState) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
