@@ -513,8 +513,8 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
     <div className="space-y-4">
       <div ref={printRef} className="relative bg-white rounded-lg border shadow-sm p-6 max-w-4xl mx-auto text-sm overflow-hidden">
         {/* Marca d'água IPPARK – grande, centralizada */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img src={ipparkWatermark} alt="" className="w-[85%] max-w-[600px] opacity-[0.08]" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none print:opacity-100">
+          <img src={ipparkWatermark} alt="" className="w-[95%] max-w-[700px] opacity-20" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' } as any} />
         </div>
 
         <div className="relative z-10">
