@@ -110,13 +110,18 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
           top: 0; left: 0; right: 0; bottom: 0;
           display: flex; align-items: center; justify-content: center;
           z-index: 0; pointer-events: none;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .watermark img {
-          width: 85%;
-          max-width: 170mm;
+          width: 95%;
+          max-width: 190mm;
           height: auto;
-          opacity: 0.08;
+          opacity: 0.22;
           object-fit: contain;
+          image-rendering: -webkit-optimize-contrast;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .content { position: relative; z-index: 1; }
         .header { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #0B2E59; padding-bottom: 8px; margin-bottom: 10px; }
