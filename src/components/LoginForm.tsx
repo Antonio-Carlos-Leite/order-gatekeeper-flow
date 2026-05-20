@@ -145,13 +145,6 @@ const LoginForm = () => {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
-                disabled={isLoading}
-              >
-                {isLoading ? "Entrando..." : "Entrar"}
-              </Button>
 
               <button
                 type="button"
