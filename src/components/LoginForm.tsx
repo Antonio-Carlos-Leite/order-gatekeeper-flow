@@ -9,6 +9,7 @@ import backgroundImage from '@/assets/tela-de-fundo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import MaintenanceSection from './MaintenanceSection';
+import ForgotPasswordDialog from './ForgotPasswordDialog';
 
 const LoginForm = () => {
   const [codigoAcesso, setCodigoAcesso] = useState('');
