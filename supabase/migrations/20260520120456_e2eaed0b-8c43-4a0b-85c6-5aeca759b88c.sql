@@ -1,0 +1,3 @@
+
+REVOKE ALL ON FUNCTION public.log_audit(UUID, TEXT, TEXT, UUID, UUID, TEXT, TEXT, JSONB) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.log_audit(UUID, TEXT, TEXT, UUID, UUID, TEXT, TEXT, JSONB) TO service_role;
