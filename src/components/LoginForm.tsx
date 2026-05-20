@@ -145,11 +145,27 @@ const LoginForm = () => {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
+                disabled={isLoading}
+              >
+                {isLoading ? "Entrando..." : "Entrar"}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setForgotOpen(true)}
+                className="block w-full text-center text-xs text-blue-700 hover:underline mt-2"
+              >
+                Esqueceu sua senha?
+              </button>
             </form>
           </CardContent>
         </Card>
 
         <MaintenanceSection />
+        <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
       </div>
     </div>
   );
