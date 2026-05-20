@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          device: string | null
+          empresa_id: string | null
+          id: string
+          ip: string | null
+          last_seen_at: string
+          revoked_at: string | null
+          session_token: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          empresa_id?: string | null
+          id?: string
+          ip?: string | null
+          last_seen_at?: string
+          revoked_at?: string | null
+          session_token?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          empresa_id?: string | null
+          id?: string
+          ip?: string | null
+          last_seen_at?: string
+          revoked_at?: string | null
+          session_token?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string | null
+          created_at: string
+          empresa_id: string | null
+          id: string
+          ip: string | null
+          metadata: Json | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          empresa_id?: string | null
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string | null
+          created_at?: string
+          empresa_id?: string | null
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       empresas: {
         Row: {
           assinatura_url: string | null
@@ -50,6 +128,36 @@ export type Database = {
           nome?: string
           responsavel_cargo?: string | null
           responsavel_nome?: string | null
+        }
+        Relationships: []
+      }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip: string | null
+          reason: string | null
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip?: string | null
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip?: string | null
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -110,6 +218,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      password_history: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pedidos: {
         Row: {
@@ -282,6 +411,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_status: {
+        Row: {
+          created_at: string
+          email_verificado: boolean
+          empresa_id: string | null
+          failed_attempts: number
+          last_login_at: string | null
+          locked_until: string | null
+          must_change_password: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_verificado?: boolean
+          empresa_id?: string | null
+          failed_attempts?: number
+          last_login_at?: string | null
+          locked_until?: string | null
+          must_change_password?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_verificado?: boolean
+          empresa_id?: string | null
+          failed_attempts?: number
+          last_login_at?: string | null
+          locked_until?: string | null
+          must_change_password?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -294,6 +462,19 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          _action: string
+          _actor_id: string
+          _actor_label: string
+          _empresa_id: string
+          _ip: string
+          _metadata: Json
+          _target_user_id: string
+          _user_agent: string
+        }
+        Returns: string
       }
     }
     Enums: {

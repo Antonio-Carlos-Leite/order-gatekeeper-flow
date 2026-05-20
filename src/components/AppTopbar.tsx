@@ -1,7 +1,18 @@
-import { Bell, Building2, KeyRound } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, Building2, KeyRound, Lock, LogOut } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import ChangePasswordDialog from './ChangePasswordDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AppTopbarProps {
   empresaNome: string;
@@ -25,6 +36,10 @@ const AppTopbar = ({
   displayName,
   userType,
 }: AppTopbarProps) => {
+  const [pwdOpen, setPwdOpen] = useState(false);
+  const { userInfo, signOut } = useAuth();
+  const userEmail = userInfo?.user?.email || '';
+
   const initials = displayName
     .split(' ')
     .filter(Boolean)
@@ -72,21 +87,41 @@ const AppTopbar = ({
 
         <div className="hidden sm:block h-8 w-px bg-border" />
 
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block leading-tight">
-            <div className="text-sm font-medium text-foreground">{displayName}</div>
-            <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-medium">
-              {roleLabel(userType)}
-            </Badge>
-          </div>
-          <Avatar className="w-9 h-9 ring-2 ring-primary/15">
-            <AvatarImage src="" />
-            <AvatarFallback className="bg-gradient-primary text-white text-xs font-bold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-3 group">
+              <div className="text-right hidden sm:block leading-tight">
+                <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{displayName}</div>
+                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-medium">
+                  {roleLabel(userType)}
+                </Badge>
+              </div>
+              <Avatar className="w-9 h-9 ring-2 ring-primary/15">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-gradient-primary text-white text-xs font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="font-medium">{displayName}</div>
+              <div className="text-xs text-muted-foreground truncate">{userEmail}</div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setPwdOpen(true)}>
+              <Lock className="w-4 h-4 mr-2" /> Alterar senha
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut()} className="text-destructive focus:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" /> Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <ChangePasswordDialog open={pwdOpen} onOpenChange={setPwdOpen} userEmail={userEmail} />
     </header>
   );
 };

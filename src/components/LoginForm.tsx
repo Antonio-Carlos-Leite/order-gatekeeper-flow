@@ -9,12 +9,14 @@ import backgroundImage from '@/assets/tela-de-fundo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import MaintenanceSection from './MaintenanceSection';
+import ForgotPasswordDialog from './ForgotPasswordDialog';
 
 const LoginForm = () => {
   const [codigoAcesso, setCodigoAcesso] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
   const { toast } = useToast();
   const { signIn, validateCodigoAcesso } = useAuth();
 
@@ -143,11 +145,20 @@ const LoginForm = () => {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
+
+              <button
+                type="button"
+                onClick={() => setForgotOpen(true)}
+                className="block w-full text-center text-xs text-blue-700 hover:underline mt-2"
+              >
+                Esqueceu sua senha?
+              </button>
             </form>
           </CardContent>
         </Card>
 
         <MaintenanceSection />
+        <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
       </div>
     </div>
   );
