@@ -47,21 +47,35 @@ const LoginForm = () => {
       return;
     }
     
-    const { error } = await signIn(email, password);
-    
+    // Pre-check lockout
+    const { data: checkData } = await supabase.functions.invoke('check-login-attempt', {
+      body: { phase: 'check', email },
+    });
+    if (checkData && checkData.allowed === false) {
+      setIsLoading(false);
+      toast({ title: 'Acesso bloqueado', description: checkData.reason, variant: 'destructive' });
+      return;
+    }
+
+    const { data: signInData, error } = await signIn(email, password);
+
+    // Record attempt (don't block UI on it)
+    supabase.functions.invoke('check-login-attempt', {
+      body: {
+        phase: 'record',
+        email,
+        success: !error,
+        reason: error?.message ?? null,
+        user_id: signInData?.user?.id ?? null,
+      },
+    }).catch(() => {});
+
     setIsLoading(false);
 
     if (error) {
-      toast({
-        title: "Acesso negado",
-        description: "Email ou senha incorretos.",
-        variant: "destructive",
-      });
+      toast({ title: 'Acesso negado', description: 'Email ou senha incorretos.', variant: 'destructive' });
     } else {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao sistema!",
-      });
+      toast({ title: 'Login realizado com sucesso!', description: 'Bem-vindo ao sistema!' });
     }
   };
 
