@@ -12,6 +12,7 @@ import { Settings, User, Lock, Shield, UserPlus, Users, Crown, MapPin, X, Packag
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import SecurityPanel from './SecurityPanel';
 
 interface EmpresaRow {
   id: string;
