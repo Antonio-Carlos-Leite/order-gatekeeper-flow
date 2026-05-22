@@ -291,6 +291,9 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
           </Card>
         </div>
       )}
+      {activeTab === 'seguranca' && (
+        <SecurityPanel />
+      )}
     </>
   );
 
