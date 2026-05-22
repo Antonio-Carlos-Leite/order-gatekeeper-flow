@@ -12,6 +12,7 @@ import { Settings, User, Lock, Shield, UserPlus, Users, Crown, MapPin, X, Packag
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import SecurityPanel from './SecurityPanel';
 
 interface EmpresaRow {
   id: string;
@@ -29,7 +30,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'cadastro' | 'codigos'>('codigos');
+  const [activeTab, setActiveTab] = useState<'cadastro' | 'codigos' | 'seguranca'>('codigos');
   const { toast } = useToast();
   const { signIn, signUp, signOut, setMaintenanceMode } = useAuth();
 
@@ -290,6 +291,9 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
           </Card>
         </div>
       )}
+      {activeTab === 'seguranca' && (
+        <SecurityPanel />
+      )}
     </>
   );
 
@@ -297,7 +301,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   if (onExit) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -315,6 +319,9 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                 </Button>
                 <Button variant={activeTab === 'cadastro' ? 'default' : 'outline'} onClick={() => setActiveTab('cadastro')} className="flex items-center gap-2">
                   <UserPlus className="w-4 h-4" />Cadastro de Usuários
+                </Button>
+                <Button variant={activeTab === 'seguranca' ? 'default' : 'outline'} onClick={() => setActiveTab('seguranca')} className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />Segurança
                 </Button>
               </div>
               <Separator />
