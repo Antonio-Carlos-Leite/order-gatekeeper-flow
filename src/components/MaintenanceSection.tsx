@@ -30,7 +30,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'cadastro' | 'codigos'>('codigos');
+  const [activeTab, setActiveTab] = useState<'cadastro' | 'codigos' | 'seguranca'>('codigos');
   const { toast } = useToast();
   const { signIn, signUp, signOut, setMaintenanceMode } = useAuth();
 
