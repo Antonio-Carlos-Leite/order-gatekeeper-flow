@@ -301,7 +301,7 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
   if (onExit) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
               <div className="flex justify-between items-center">
