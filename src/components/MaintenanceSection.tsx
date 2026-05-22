@@ -320,6 +320,9 @@ const MaintenanceSection = ({ onExit }: MaintenanceSectionProps) => {
                 <Button variant={activeTab === 'cadastro' ? 'default' : 'outline'} onClick={() => setActiveTab('cadastro')} className="flex items-center gap-2">
                   <UserPlus className="w-4 h-4" />Cadastro de Usuários
                 </Button>
+                <Button variant={activeTab === 'seguranca' ? 'default' : 'outline'} onClick={() => setActiveTab('seguranca')} className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />Segurança
+                </Button>
               </div>
               <Separator />
               {renderContent()}
