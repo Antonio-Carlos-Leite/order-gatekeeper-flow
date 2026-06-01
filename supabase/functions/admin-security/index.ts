@@ -168,6 +168,14 @@ Deno.serve(async (req) => {
         return json({ empresas: data ?? [] });
       }
 
+      case "clear_must_change_password": {
+        const { target_user_id } = body;
+        const uid = target_user_id ?? caller.id;
+        await admin.from("user_status").update({ must_change_password: false, updated_at: new Date().toISOString() }).eq("user_id", uid);
+        await logAudit("user.password_changed", uid);
+        return json({ success: true });
+      }
+
       case "end_session": {
         const { session_id, target_user_id } = body;
         if (session_id) {
