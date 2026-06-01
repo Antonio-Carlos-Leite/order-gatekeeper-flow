@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Shield, Ban, Unlock, KeyRound, Trash2, LogOut, RefreshCw, Search, ScrollText, Users as UsersIcon, MonitorSmartphone, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import CreateUserDialog from './CreateUserDialog';
 
 interface UserRow {
   id: string;
