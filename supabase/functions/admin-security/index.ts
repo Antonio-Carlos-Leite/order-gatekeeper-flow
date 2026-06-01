@@ -124,6 +124,58 @@ Deno.serve(async (req) => {
         return json({ success: true });
       }
 
+      case "create_user": {
+        const { email, display_name, username, empresa_id, role } = body;
+        if (!email || !display_name || !empresa_id || !role) {
+          return json({ error: "Campos obrigatórios: email, display_name, empresa_id, role" }, 400);
+        }
+        const tempPwd = `Ipp${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}!9A`;
+        const { data: created, error: createErr } = await admin.auth.admin.createUser({
+          email,
+          password: tempPwd,
+          email_confirm: true,
+          user_metadata: {
+            empresa_id,
+            display_name,
+            username: username ?? email,
+            role,
+            must_change_password: true,
+          },
+        });
+        if (createErr) return json({ error: createErr.message }, 400);
+        const newUserId = created.user?.id;
+        if (newUserId) {
+          await admin.from("user_status").update({
+            must_change_password: true,
+            status: "ativo",
+            email_verificado: true,
+          }).eq("user_id", newUserId);
+        }
+        await logAudit("user.create", newUserId ?? null, { email, role, empresa_id });
+        return json({ success: true, user_id: newUserId, temporary_password: tempPwd });
+      }
+
+      case "force_password_change": {
+        const { target_user_id } = body;
+        if (!target_user_id) return json({ error: "target_user_id obrigatório" }, 400);
+        await admin.from("user_status").update({ must_change_password: true, updated_at: new Date().toISOString() }).eq("user_id", target_user_id);
+        await logAudit("user.force_password_change", target_user_id);
+        return json({ success: true });
+      }
+
+      case "list_empresas": {
+        const { data } = await admin.from("empresas").select("id, nome, codigo_acesso").order("nome");
+        return json({ empresas: data ?? [] });
+      }
+
+      case "clear_must_change_password": {
+        const { target_user_id } = body;
+        const uid = target_user_id ?? caller.id;
+        await admin.from("user_status").update({ must_change_password: false, updated_at: new Date().toISOString() }).eq("user_id", uid);
+        await logAudit("user.password_changed", uid);
+        return json({ success: true });
+      }
+
       case "end_session": {
         const { session_id, target_user_id } = body;
         if (session_id) {

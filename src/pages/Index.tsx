@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePedidos } from '@/hooks/usePedidos';
 import { useEstoque } from '@/hooks/useEstoque';
@@ -15,12 +15,21 @@ import OrdemServicoForm from '@/components/OrdemServicoForm';
 import OrdemServicoList from '@/components/OrdemServicoList';
 import EmpresaConfig from '@/components/EmpresaConfig';
 import MaintenanceSection from '@/components/MaintenanceSection';
+import FirstAccessGate from '@/components/FirstAccessGate';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { userInfo, loading, signOut, maintenanceMode, setMaintenanceMode } = useAuth();
   const { pedidos, pendingOrders, processedOrders, ordensServico, createPedido, createOrdemServico, approvePedido, updatePedidoStatus } = usePedidos(userInfo);
   const estoque = useEstoque(userInfo);
   const [currentPage, setCurrentPage] = useState<Page | null>(null);
+  const [mustChangePwd, setMustChangePwd] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!userInfo?.userId) { setMustChangePwd(null); return; }
+    supabase.from('user_status').select('must_change_password').eq('user_id', userInfo.userId).maybeSingle()
+      .then(({ data }) => setMustChangePwd(Boolean(data?.must_change_password)));
+  }, [userInfo?.userId]);
 
   if (loading) {
     return (
@@ -34,6 +43,10 @@ const Index = () => {
   }
 
   if (!userInfo) return <LoginForm />;
+
+  if (mustChangePwd) {
+    return <FirstAccessGate userId={userInfo.userId} onCompleted={() => setMustChangePwd(false)} onSignOut={signOut} />;
+  }
 
   if (maintenanceMode) {
     return <MaintenanceSection onExit={() => { setMaintenanceMode(false); signOut(); }} />;
