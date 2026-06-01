@@ -99,10 +99,13 @@ const SecurityPanel = () => {
           <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5" />Segurança e Auditoria</CardTitle>
           <CardDescription>Gestão global de usuários, sessões e logs de toda a plataforma IPPark</CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <CreateUserDialog onCreated={loadAll} />
+          <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="users" className="w-full">
