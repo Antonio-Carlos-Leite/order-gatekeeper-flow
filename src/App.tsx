@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import ContaPendente from "./pages/ContaPendente";
+import ContaBloqueada from "./pages/ContaBloqueada";
+import VerificarEmail from "./pages/VerificarEmail";
 
 const queryClient = new QueryClient();
 
