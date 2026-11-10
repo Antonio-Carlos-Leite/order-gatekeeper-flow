@@ -101,7 +101,7 @@ const Index = () => {
     tipoLampada: p.tipo_lampada || '',
     observações: p.observacoes_atendimento || '',
     comments: p.comments || p.observacoes_tecnico || '',
-    enviadoPor: userInfo.displayName,
+    enviadoPor: p.criado_por_nome || '—',
     dataEnvio: new Date(p.created_at).toLocaleString('pt-BR'),
     status: p.status === 'aprovado' ? 'approved' : p.status === 'rejeitado' ? 'rejected' : 'pending',
     municipio: userInfo.municipio,

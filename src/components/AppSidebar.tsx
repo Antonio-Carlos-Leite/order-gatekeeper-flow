@@ -26,6 +26,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
+import ipparkLogo from '@/assets/ippark-logo.png.asset.json';
 
 export type Page =
   | 'dashboard'
@@ -115,8 +116,8 @@ const AppSidebar = ({
       <div className="flex flex-col h-full bg-gradient-sidebar text-sidebar-foreground">
         <SidebarHeader className="px-4 py-5 border-b border-sidebar-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-elegant shrink-0">
-              <Lightbulb className="w-5 h-5 text-white" strokeWidth={2.4} />
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-elegant shrink-0 overflow-hidden p-1">
+              <img src={ipparkLogo.url} alt="IPPARK" className="w-full h-full object-contain" />
             </div>
             {!collapsed && (
               <div className="leading-tight">

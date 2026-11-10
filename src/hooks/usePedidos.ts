@@ -10,13 +10,26 @@ export function usePedidos(userInfo: AuthUserInfo | null) {
     if (!userInfo) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('pedidos')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+      const [{ data, error }, { data: profilesData }] = await Promise.all([
+        supabase
+          .from('pedidos')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('profiles')
+          .select('user_id, display_name'),
+      ]);
+
       if (error) throw error;
-      setPedidos(data || []);
+
+      const nameByUserId = new Map(
+        (profilesData || []).map((p: any) => [p.user_id, p.display_name])
+      );
+
+      setPedidos((data || []).map((p: any) => ({
+        ...p,
+        criado_por_nome: nameByUserId.get(p.criado_por) || null,
+      })));
     } catch (error) {
       console.error('Error fetching pedidos:', error);
     } finally {

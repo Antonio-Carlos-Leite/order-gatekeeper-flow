@@ -117,7 +117,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
           width: 95%;
           max-width: 190mm;
           height: auto;
-          opacity: 0.22;
+          opacity: 0.32;
           object-fit: contain;
           image-rendering: -webkit-optimize-contrast;
           -webkit-print-color-adjust: exact;
@@ -136,19 +136,19 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         .header-right .num { font-size: 12px; font-weight: bold; color: #0B2E59; }
         .header-right .data { font-size: 9px; color: #555; margin: 2px 0; }
         .status-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 10px; }
-        .section { border: 1px solid #e5e7eb; margin-bottom: 7px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.82); }
+        .section { border: 1px solid #e5e7eb; margin-bottom: 7px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.55); }
         .section-title { background: #0B2E59; color: #fff; padding: 5px 11px; font-size: 9.5px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
         .section-body { padding: 6px 10px; }
         .field-row { display: flex; gap: 14px; margin-bottom: 2px; flex-wrap: wrap; }
         .field { flex: 1; min-width: 45%; font-size: 10px; }
         .field-label { font-weight: bold; color: #444; }
-        .obs-box { min-height: 26px; padding: 4px 6px; background: rgba(250,250,250,0.7); border: 1px dashed #ddd; border-radius: 3px; white-space: pre-wrap; font-size: 9.5px; }
-        table.materiais { width: 100%; border-collapse: collapse; font-size: 10px; }
-        table.materiais th { background: #f0f4f8; color: #0B2E59; padding: 4px; text-align: left; border: 1px solid #d1d5db; }
-        table.materiais td { padding: 4px; border: 1px solid #e5e7eb; }
+        .obs-box { min-height: 26px; padding: 4px 6px; background: rgba(250,250,250,0.45); border: 1px dashed #ddd; border-radius: 3px; white-space: pre-wrap; font-size: 9.5px; }
+        table.materiais { width: 100%; border-collapse: collapse; font-size: 10px; background: rgba(255,255,255,0.55); }
+        table.materiais th { background: rgba(240,244,248,0.8); color: #0B2E59; padding: 4px; text-align: left; border: 1px solid #d1d5db; }
+        table.materiais td { padding: 4px; border: 1px solid #cbd5e1; height: 9mm; }
         /* Tabela técnico */
-        table.tecnico { width: 92%; margin: 4px auto; border-collapse: collapse; font-size: 10px; background: rgba(255,255,255,0.85); border-radius: 6px; overflow: hidden; }
-        table.tecnico th { background: #f3f6fb; color: #0B2E59; padding: 5px 8px; text-align: left; border: 1px solid #e5e7eb; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        table.tecnico { width: 92%; margin: 4px auto; border-collapse: collapse; font-size: 10px; background: rgba(255,255,255,0.6); border-radius: 6px; overflow: hidden; }
+        table.tecnico th { background: rgba(243,246,251,0.8); color: #0B2E59; padding: 5px 8px; text-align: left; border: 1px solid #e5e7eb; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; }
         table.tecnico td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
         .check { display: flex; align-items: center; gap: 7px; margin: 5px 0; font-size: 11px; }
         .box { display: inline-block; width: 16px; height: 16px; border: 1.5px solid #0B2E59; border-radius: 2px; background: #fff; flex-shrink: 0; }
@@ -166,7 +166,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           button { display: none !important; }
-          .watermark img { opacity: 0.22; }
+          .watermark img { opacity: 0.32; }
         }
       </style>
       </head><body>
@@ -231,11 +231,9 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
               <div class="section-title">Materiais Utilizados</div>
               <div class="section-body">
                 <table class="materiais">
-                  <thead><tr><th style="width:75%">Produto</th><th>Quantidade</th></tr></thead>
+                  <thead><tr><th style="width:72%">Produto / Material</th><th>Quantidade</th></tr></thead>
                   <tbody>
-                    ${order.tipo_lampada
-                      ? `<tr><td>${order.tipo_lampada}</td><td>1</td></tr>`
-                      : `<tr><td colspan="2" style="text-align:center;color:#999">Nenhum material registrado</td></tr>`}
+                    ${Array.from({ length: 8 }).map(() => '<tr><td></td><td></td></tr>').join('')}
                   </tbody>
                 </table>
               </div>
@@ -295,7 +293,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
       const wmWidth = w * 0.95;
       const wmHeight = wmWidth / ratio;
       // @ts-ignore
-      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.20 }) : null;
+      const gState = (doc as any).GState ? new (doc as any).GState({ opacity: 0.28 }) : null;
       if (gState) (doc as any).setGState(gState);
       doc.addImage(wm, 'PNG', (w - wmWidth) / 2, (h - wmHeight) / 2, wmWidth, wmHeight);
       if (gState) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
@@ -460,9 +458,41 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
 
     y += tecRowH + 4;
 
-    addSection('Materiais Utilizados', [
-      ['Produto', order.tipo_lampada ? `${order.tipo_lampada} — Qtd: 1` : 'Nenhum material registrado'],
-    ]);
+    // ===== Materiais Utilizados (tabela em branco para preenchimento manual) =====
+    doc.setFillColor(11, 46, 89);
+    doc.rect(12, y, w - 24, 6, 'F');
+    doc.setTextColor(255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text('MATERIAIS UTILIZADOS', 14, y + 4);
+    y += 6;
+
+    const matX = 14;
+    const matW = w - 28;
+    const matProdW = matW * 0.72;
+    const matRowH = 9;
+
+    // Cabeçalho da tabela
+    doc.setFillColor(240, 244, 248);
+    doc.rect(matX, y, matW, 5, 'F');
+    doc.setTextColor(11, 46, 89);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PRODUTO / MATERIAL', matX + 2, y + 3.5);
+    doc.text('QUANTIDADE', matX + matProdW + 2, y + 3.5);
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.2);
+    doc.rect(matX, y, matProdW, 5);
+    doc.rect(matX + matProdW, y, matW - matProdW, 5);
+    y += 5;
+
+    // 8 linhas em branco, altas, para escrita à mão
+    for (let i = 0; i < 8; i++) {
+      doc.rect(matX, y, matProdW, matRowH);
+      doc.rect(matX + matProdW, y, matW - matProdW, matRowH);
+      y += matRowH;
+    }
+    y += 4;
 
     addSection('Observações', [['', order.observacoes_atendimento || '—']]);
 
@@ -514,7 +544,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
       <div ref={printRef} className="relative bg-white rounded-lg border shadow-sm p-6 max-w-4xl mx-auto text-sm overflow-hidden">
         {/* Marca d'água IPPARK – grande, centralizada */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none print:opacity-100">
-          <img src={ipparkWatermark} alt="" className="w-[95%] max-w-[700px] opacity-20" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' } as any} />
+          <img src={ipparkWatermark} alt="" className="w-[95%] max-w-[700px] opacity-30" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' } as any} />
         </div>
 
         <div className="relative z-10">
@@ -565,8 +595,8 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
 
           {/* === NOVA SEÇÃO: OBSERVAÇÕES DO TÉCNICO === */}
           <Section title="Observações do Técnico">
-            <div className="w-[92%] mx-auto rounded-md border border-border overflow-hidden bg-white/85">
-              <div className="grid grid-cols-[30%_42%_28%] text-[10px] font-bold uppercase tracking-wide text-[#0B2E59] bg-[#f3f6fb]">
+            <div className="w-[92%] mx-auto rounded-md border border-border overflow-hidden bg-white/60">
+              <div className="grid grid-cols-[30%_42%_28%] text-[10px] font-bold uppercase tracking-wide text-[#0B2E59] bg-[#f3f6fb]/80">
                 <div className="px-2 py-1.5 border-r border-border">Tipo de lâmpada</div>
                 <div className="px-2 py-1.5 border-r border-border">Potência (W)</div>
                 <div className="px-2 py-1.5">Outros</div>
@@ -593,19 +623,17 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
           </Section>
 
           <Section title="Materiais Utilizados">
-            <table className="w-full text-xs">
+            <table className="w-full text-xs bg-white/55">
               <thead>
-                <tr className="bg-blue-50 text-[#0B2E59]">
-                  <th className="text-left p-1.5 border">Produto</th>
-                  <th className="text-left p-1.5 border w-24">Quantidade</th>
+                <tr className="bg-blue-50/80 text-[#0B2E59]">
+                  <th className="text-left p-1.5 border">Produto / Material</th>
+                  <th className="text-left p-1.5 border w-28">Quantidade</th>
                 </tr>
               </thead>
               <tbody>
-                {order.tipo_lampada ? (
-                  <tr><td className="p-1.5 border">{order.tipo_lampada}</td><td className="p-1.5 border">1</td></tr>
-                ) : (
-                  <tr><td colSpan={2} className="p-2 text-center text-muted-foreground border">Nenhum material registrado</td></tr>
-                )}
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <tr key={i}><td className="p-1.5 border h-9"></td><td className="p-1.5 border"></td></tr>
+                ))}
               </tbody>
             </table>
           </Section>
@@ -663,7 +691,7 @@ const OrdemServicoPrint = ({ order, empresa, responsavel, onClose, preview }: Or
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border rounded mb-2 overflow-hidden bg-white/85">
+    <div className="border rounded mb-2 overflow-hidden bg-white/55">
       <div className="bg-[#0B2E59] text-white px-3 py-1.5 text-[10px] font-bold tracking-wide uppercase">{title}</div>
       <div className="p-2">{children}</div>
     </div>
